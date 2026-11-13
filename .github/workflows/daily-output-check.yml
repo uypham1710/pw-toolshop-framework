@@ -1,0 +1,47 @@
+# .github/workflows/daily-output-check.yml
+# 22:00 giờ VN mỗi ngày: nếu không có commit "dayNN:" hôm nay -> tạo issue assign cho bạn
+# -> GitHub Mobile / email sẽ notify.
+name: daily-output-check
+
+on:
+  schedule:
+    - cron: "0 15 * * *"   # 15:00 UTC = 22:00 Asia/Ho_Chi_Minh
+  workflow_dispatch:        # cho phép bấm chạy tay để test
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - name: Count today's commits
+        id: count
+        env:
+          TZ: Asia/Ho_Chi_Minh
+        run: |
+          TODAY=$(date +%F)
+          COUNT=$(git log --since="$TODAY 00:00" --oneline --grep='^day[0-9]\+:' | wc -l)
+          echo "today=$TODAY" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Commits today: $COUNT"
+
+      - name: Open issue if no output
+        if: steps.count.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "⚠️ No Playwright output on ${{ steps.count.outputs.today }}" \
+            --body "Không có commit \`dayNN:\` nào hôm nay. Streak bị đứt — làm bù ngày mai và ghi lý do vào docs/daily-log.md." \
+            --assignee "${{ github.repository_owner }}" \
+            --label "missed-day" || \
+          gh issue create \
+            --title "⚠️ No Playwright output on ${{ steps.count.outputs.today }}" \
+            --body "Không có commit \`dayNN:\` nào hôm nay." \
+            --assignee "${{ github.repository_owner }}"
