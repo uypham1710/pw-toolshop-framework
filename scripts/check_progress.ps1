@@ -1,10 +1,10 @@
-# check_progress.ps1
+﻿# check_progress.ps1
 # Kiểm tra "Definition of Done" của ngày hôm nay, thiếu gì thì bắn Windows toast notification.
 # Chạy bằng Task Scheduler lúc 20:00 và 22:00.
 
 param(
     [string]$RepoPath = "D:\Study\Playwright\pw-toolshop-framework"  
-
+)
 Set-Location $RepoPath
 $today      = Get-Date -Format "yyyy-MM-dd"
 $missing    = @()

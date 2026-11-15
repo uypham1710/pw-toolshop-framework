@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    // --- Module & Environment ---
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+
+    // --- Output: chỉ type-check, không sinh file .js ---
+    "noEmit": true,
+
+    // --- Type checking ---
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    // --- Module syntax ---
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noUncheckedSideEffectImports": true,
+
+    // --- Performance ---
+    "skipLibCheck": true
+  },
+  "include": ["playwright.config.ts", "tests/**/*.ts", "src/**/*.ts"]
+}

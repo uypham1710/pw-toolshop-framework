@@ -1,0 +1,31 @@
+{
+  "name": "pw-toolshop-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uypham1710/pw-toolshop-framework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/uypham1710/pw-toolshop-framework/issues"
+  },
+  "homepage": "https://github.com/uypham1710/pw-toolshop-framework#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.15.0",
+    "eslint-plugin-playwright": "^2.12.2",
+    "typescript": "<6.1",
+    "typescript-eslint": "^8.72.2"
+  }
+}
