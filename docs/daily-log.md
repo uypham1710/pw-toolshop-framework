@@ -24,6 +24,13 @@ Typescript basics
 interface, import và export
 ! định nghĩa biến đó chắc chắn ko phải undefined
 dùng filter để lọc thêm điều kiện locator
+Chuyển "type" sang "module" để package.json khớp với tsconfig (module: esnext + verbatimModuleSyntax): code viết bằng ESM nên Node cũng phải hiểu là ESM. Trong ESM không có __dirname, thay bằng import.meta.dirname.
 **Blocker:**
 khi dùng getByRole hiểu nhầm name và class giống bên Selenium
-
+**Câu hỏi reviewer**
+Nếu ở `home.smoke.spec.ts:6` bạn **quên `await`** trước `expect(page).toHaveTitle(/Practice Software Testing/)` và site đổi title sang chuỗi khác:
+(a) test sẽ pass hay fail, và vì sao (gợi ý: `toHaveTitle` trả về gì, test function kết thúc khi nào)?
+test fail và không báo lỗi rõ ràng về title sai, mà là Test Ended
+Không có await thì test function chạy tới cuối và kết thúc ngay, assertion bị cắt ngang nên Playwright báo Test ended chứ không báo title sai.”
+(b) Trong repo này, công cụ nào sẽ bắt lỗi đó _trước khi_ chạy test, và rule tên gì?
+công cụ eslint, rule: @typescript-eslint/no-floating-promises
