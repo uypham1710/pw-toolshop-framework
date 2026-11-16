@@ -1,12 +1,12 @@
 # .github/workflows/daily-output-check.yml
-# 22:00 giờ VN mỗi ngày: nếu không có commit "dayNN:" hôm nay -> tạo issue assign cho bạn
-# -> GitHub Mobile / email sẽ notify.
+# Mỗi tối kiểm tra: nếu NGÀY ĐÓ (giờ VN) không có commit "dayNN:" -> tạo issue assign cho bạn.
+# v2: chịu được việc GitHub chạy schedule trễ (kể cả trễ qua nửa đêm).
 name: daily-output-check
 
 on:
   schedule:
-    - cron: "0 15 * * *"   # 15:00 UTC = 22:00 Asia/Ho_Chi_Minh
-  workflow_dispatch:        # cho phép bấm chạy tay để test
+    - cron: "17 14 * * *"   # 14:17 UTC = 21:17 giờ VN (tránh phút :00 vì giờ chẵn hay bị trễ)
+  workflow_dispatch:         # cho phép bấm chạy tay để test
 
 permissions:
   contents: read
@@ -20,28 +20,34 @@ jobs:
         with:
           fetch-depth: 100
 
-      - name: Count today's commits
+      - name: Count commits of the target day
         id: count
         env:
           TZ: Asia/Ho_Chi_Minh
         run: |
-          TODAY=$(date +%F)
-          COUNT=$(git log --since="$TODAY 00:00" --oneline --grep='^day[0-9]\+:' | wc -l)
-          echo "today=$TODAY" >> "$GITHUB_OUTPUT"
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-          echo "Commits today: $COUNT"
+          # Lùi 12 tiếng để xác định "ngày cần kiểm tra":
+          # - chạy đúng giờ 21:17  -> vẫn là hôm nay
+          # - bị trễ đến 04:00 sáng hôm sau -> vẫn kiểm tra hôm trước (không báo nhầm)
+          TARGET=$(date -d "-12 hours" +%F)
+          COUNT=$(git log --since="$TARGET 00:00:00" --until="$TARGET 23:59:59" \
+                  --oneline --grep='^day[0-9]\+:' | wc -l)
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT"   >> "$GITHUB_OUTPUT"
+          echo "Now (VN): $(date '+%F %T') | Target day: $TARGET | dayNN commits: $COUNT"
 
       - name: Open issue if no output
         if: steps.count.outputs.count == '0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
-            --title "⚠️ No Playwright output on ${{ steps.count.outputs.today }}" \
-            --body "Không có commit \`dayNN:\` nào hôm nay. Streak bị đứt — làm bù ngày mai và ghi lý do vào docs/daily-log.md." \
-            --assignee "${{ github.repository_owner }}" \
-            --label "missed-day" || \
-          gh issue create \
-            --title "⚠️ No Playwright output on ${{ steps.count.outputs.today }}" \
-            --body "Không có commit \`dayNN:\` nào hôm nay." \
+          TITLE="⚠️ No Playwright output on ${{ steps.count.outputs.target }}"
+          BODY="Không có commit \`dayNN:\` nào trong ngày ${{ steps.count.outputs.target }} (giờ VN). Làm bù và ghi lý do vào docs/daily-log.md."
+          # Không tạo trùng nếu issue cho ngày này đã tồn tại
+          if gh issue list --state all --search "in:title \"$TITLE\"" --json number --jq '.[0].number' | grep -q .; then
+            echo "Issue for this day already exists, skip."
+            exit 0
+          fi
+          gh issue create --title "$TITLE" --body "$BODY" \
+            --assignee "${{ github.repository_owner }}" --label "missed-day" || \
+          gh issue create --title "$TITLE" --body "$BODY" \
             --assignee "${{ github.repository_owner }}"
