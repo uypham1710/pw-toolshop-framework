@@ -8,11 +8,11 @@ Files: `playwright.config.ts`, `tests/ui/locators.spec.ts`, `docs/daily-log.md`
 
 ## Kiểm tra tự động
 
-| Lệnh                                   | Kết quả                                |
-| -------------------------------------- | -------------------------------------- |
-| `npx tsc --noEmit`                     | ✅ pass (exit 0)                        |
-| `npx eslint .`                         | ✅ pass (0 problem)                     |
-| `npx playwright test --reporter=list`  | ✅ 6 passed (4.8s, 6 workers, chromium) |
+| Lệnh                                  | Kết quả                                 |
+| ------------------------------------- | --------------------------------------- |
+| `npx tsc --noEmit`                    | ✅ pass (exit 0)                        |
+| `npx eslint .`                        | ✅ pass (0 problem)                     |
+| `npx playwright test --reporter=list` | ✅ 6 passed (4.8s, 6 workers, chromium) |
 
 ## Issues
 
@@ -67,13 +67,13 @@ Files: `playwright.config.ts`, `tests/ui/locators.spec.ts`, `docs/daily-log.md`
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 3: tsc/eslint/test pass, đủ mục tiêu D3                                                           |
-| Locator & waiting (3)        | 2: không wait thủ công, fix flaky đúng kiểu; trừ cho label exact có `*` và testid thay cho role  |
-| Structure/POM (2)            | 1.5: locator lặp lại, file theo chủ đề học, `src/data` vẫn dead code                             |
-| Readability & TS quality (2) | 1.5: format không đồng nhất, thiếu comment cho guard chống flaky, tên test chưa theo convention   |
-| **Tổng**                     | **8 / 10**                                                                                        |
+| Tiêu chí                     | Điểm                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 3: tsc/eslint/test pass, đủ mục tiêu D3                                                         |
+| Locator & waiting (3)        | 2: không wait thủ công, fix flaky đúng kiểu; trừ cho label exact có `*` và testid thay cho role |
+| Structure/POM (2)            | 1.5: locator lặp lại, file theo chủ đề học, `src/data` vẫn dead code                            |
+| Readability & TS quality (2) | 1.5: format không đồng nhất, thiếu comment cho guard chống flaky, tên test chưa theo convention |
+| **Tổng**                     | **8 / 10**                                                                                      |
 
 **Kết luận: PASS** (≥ 7, không có High). Issues: High 0 · Medium 2 · Low 7.
 

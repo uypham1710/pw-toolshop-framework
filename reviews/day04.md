@@ -6,11 +6,11 @@
 
 ## Kiểm tra tự động
 
-| Lệnh                                   | Kết quả                                                                                 |
-| -------------------------------------- | --------------------------------------------------------------------------------------- |
-| `npx tsc --noEmit`                     | ✅ pass                                                                                 |
-| `npx eslint .`                         | ✅ pass                                                                                 |
-| `npx playwright test --reporter=list`  | ✅ 10/10 pass (chromium, 6 workers, 8.0s)                                               |
+| Lệnh                                    | Kết quả                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit`                      | ✅ pass                                                                                           |
+| `npx eslint .`                          | ✅ pass                                                                                           |
+| `npx playwright test --reporter=list`   | ✅ 10/10 pass (chromium, 6 workers, 8.0s)                                                         |
 | `npx prettier --check src tests` (thêm) | ⚠️ 3 file chưa format: `src/data/users.ts`, `tests/ui/login.spec.ts`, `tests/ui/locators.spec.ts` |
 
 Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first assertion và `expect.soft`.
@@ -20,11 +20,12 @@ Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first asse
 **[High] `src/data/users.ts:6-9` — Email cá nhân + password thật bị hardcode, đã commit và push lên GitHub (`origin/main`)**
 — Repo này có remote GitHub. Nếu repo public thì ai cũng đọc được password. Kể cả repo private, password vẫn nằm trong git history: sửa file ở commit sau **không** xoá được nó. Nếu bạn dùng password này ở nơi khác (Gmail, ...) thì rủi ro còn lớn hơn. CLAUDE.md cũng ghi rõ "không hardcode credential".
 — Hint:
-  1. **Việc gấp nhất:** đổi password tài khoản Toolshop này, và đổi ở mọi nơi khác đang dùng cùng password. Hãy coi password cũ là đã lộ.
-  2. Đưa credential ra `.env` (`.gitignore` đã có `.env`), thêm `.env.example` chỉ chứa tên biến, đọc bằng `process.env` qua dotenv. Roadmap để việc này ở D8, nhưng với credential thật thì nên làm ngay.
-  3. Toolshop có sẵn tài khoản demo công khai (xem phần "login" trên trang hoặc README của repo `testsmith-io/practice-software-testing`). Dùng tài khoản demo thì không bao giờ lộ gì của bạn.
-  4. (Tuỳ chọn) Xoá khỏi history: keyword `git filter-repo`, "GitHub removing sensitive data". Bước này rewrite history nên phải force-push.
-— Thói quen Selenium/Python: `config.py` với `USER = "..."` hardcode. Bên Python có `python-dotenv` + `os.getenv`, và bên Node làm y hệt.
+
+1. **Việc gấp nhất:** đổi password tài khoản Toolshop này, và đổi ở mọi nơi khác đang dùng cùng password. Hãy coi password cũ là đã lộ.
+2. Đưa credential ra `.env` (`.gitignore` đã có `.env`), thêm `.env.example` chỉ chứa tên biến, đọc bằng `process.env` qua dotenv. Roadmap để việc này ở D8, nhưng với credential thật thì nên làm ngay.
+3. Toolshop có sẵn tài khoản demo công khai (xem phần "login" trên trang hoặc README của repo `testsmith-io/practice-software-testing`). Dùng tài khoản demo thì không bao giờ lộ gì của bạn.
+4. (Tuỳ chọn) Xoá khỏi history: keyword `git filter-repo`, "GitHub removing sensitive data". Bước này rewrite history nên phải force-push.
+   — Thói quen Selenium/Python: `config.py` với `USER = "..."` hardcode. Bên Python có `python-dotenv` + `os.getenv`, và bên Node làm y hệt.
 
 **[Medium] `tests/ui/login.spec.ts:15-24` + `:4-13` — Test "Invalid password" dùng chung account với "Login success", có thể làm account bị lock**
 — Toolshop có cơ chế khoá account sau vài lần login sai liên tiếp. Bạn hãy tự kiểm chứng bằng cách login sai 3–4 lần bằng tay. Hiện chỉ có 1 lần sai nên vẫn pass. Nhưng khi bật `retries` trên CI, chạy `--repeat-each` (D19), thêm firefox/webkit (D18), hoặc 2 worker chạy cùng lúc, số lần sai sẽ cộng dồn. Account bị lock thì **"Login success" sẽ fail dù code không sai**. Đây là flaky kiểu "shared state ngoài process", và `fullyParallel` không cứu được.
@@ -67,13 +68,13 @@ Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first asse
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 2: tsc/eslint/test pass, đủ mục tiêu D4; trừ vì credential bị lộ và rủi ro account lock               |
-| Locator & waiting (3)        | 2.5: role/label/regex tốt, không wait thủ công; trừ cho `not.toHaveURL` pass ngay                      |
-| Structure/POM (2)            | 1.5: có `interface User` + tách data; locator/goto lặp 4 lần (chấp nhận được trước D6)                |
-| Readability & TS quality (2) | 1.5: code ngắn gọn, dễ đọc; Prettier chưa sạch, `fill("")` thừa, tên test chưa rõ kết quả mong đợi    |
-| **Tổng**                     | **7.5 / 10**                                                                                          |
+| Tiêu chí                     | Điểm                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2: tsc/eslint/test pass, đủ mục tiêu D4; trừ vì credential bị lộ và rủi ro account lock            |
+| Locator & waiting (3)        | 2.5: role/label/regex tốt, không wait thủ công; trừ cho `not.toHaveURL` pass ngay                  |
+| Structure/POM (2)            | 1.5: có `interface User` + tách data; locator/goto lặp 4 lần (chấp nhận được trước D6)             |
+| Readability & TS quality (2) | 1.5: code ngắn gọn, dễ đọc; Prettier chưa sạch, `fill("")` thừa, tên test chưa rõ kết quả mong đợi |
+| **Tổng**                     | **7.5 / 10**                                                                                       |
 
 **Kết luận: NEEDS FIX**. Score ≥ 7 nhưng còn 1 issue **High** (credential). Issues: High 1 · Medium 2 · Low 5.
 
@@ -93,25 +94,25 @@ Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first asse
 
 ### Kiểm tra tự động
 
-| Lệnh                                    | Kết quả                                                                                                  |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `npx tsc --noEmit`                      | ✅ pass                                                                                                  |
-| `npx eslint .`                          | ✅ pass                                                                                                  |
-| `npx playwright test --reporter=list`   | ✅ 10/10 pass (chromium, 6 workers, 5.1s) — **local, có `.env`**                                         |
+| Lệnh                                                         | Kết quả                                                                                                                            |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit`                                           | ✅ pass                                                                                                                            |
+| `npx eslint .`                                               | ✅ pass                                                                                                                            |
+| `npx playwright test --reporter=list`                        | ✅ 10/10 pass (chromium, 6 workers, 5.1s) — **local, có `.env`**                                                                   |
 | `npx prettier --check src tests playwright.config.ts` (thêm) | ⚠️ 5 file: `src/config/env.ts`, `src/data/users.ts`, `tests/ui/login.spec.ts`, `tests/ui/locators.spec.ts`, `playwright.config.ts` |
 
 ### Trạng thái các issue cũ
 
-| Issue cũ                                     | Trạng thái                                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Issue cũ                                     | Trạng thái                                                                                           |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | [High] Credential hardcode                   | ✅ Code đã sạch (đọc từ env). ⚠️ Nhưng password cũ **vẫn nằm trong history** đã push → xem Medium #1 |
-| [Medium] Invalid password dùng chung account | ❌ Chưa sửa                                                                                         |
-| [Medium] `not.toHaveURL` pass ngay           | ❌ Chưa sửa                                                                                         |
-| [Low] `fill("")` thừa                        | ❌ Chưa sửa                                                                                         |
-| [Low] Locator + `goto` lặp                   | ⏳ OK để tới D5/D6                                                                                  |
-| [Low] Prettier                               | ❌ Tệ hơn: từ 3 lên 5 file                                                                          |
-| [Low] daily-log day04                        | ✅ Đã ghi (nhưng xem Low bên dưới)                                                                  |
-| [Low] Tên test                               | ❌ Chưa sửa                                                                                         |
+| [Medium] Invalid password dùng chung account | ❌ Chưa sửa                                                                                          |
+| [Medium] `not.toHaveURL` pass ngay           | ❌ Chưa sửa                                                                                          |
+| [Low] `fill("")` thừa                        | ❌ Chưa sửa                                                                                          |
+| [Low] Locator + `goto` lặp                   | ⏳ OK để tới D5/D6                                                                                   |
+| [Low] Prettier                               | ❌ Tệ hơn: từ 3 lên 5 file                                                                           |
+| [Low] daily-log day04                        | ✅ Đã ghi (nhưng xem Low bên dưới)                                                                   |
+| [Low] Tên test                               | ❌ Chưa sửa                                                                                          |
 
 ### Issues (re-review)
 
@@ -163,13 +164,13 @@ Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first asse
 
 ### Score (re-review)
 
-| Tiêu chí                     | Điểm                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 2: local pass, credential ra khỏi code; trừ vì CI thiếu secrets và rủi ro account lock vẫn còn    |
-| Locator & waiting (3)        | 2.5: không đổi; `not.toHaveURL` vẫn đứng trước                                                    |
-| Structure/POM (2)            | 1.5: tách config/data tốt; locator lặp (chờ D6)                                                   |
-| Readability & TS quality (2) | 1.5: `requireEnv` typed sạch; Prettier 5 file, `fill("")`, tên test, daily-log copy-paste          |
-| **Tổng**                     | **7.5 / 10**                                                                                      |
+| Tiêu chí                     | Điểm                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2: local pass, credential ra khỏi code; trừ vì CI thiếu secrets và rủi ro account lock vẫn còn |
+| Locator & waiting (3)        | 2.5: không đổi; `not.toHaveURL` vẫn đứng trước                                                 |
+| Structure/POM (2)            | 1.5: tách config/data tốt; locator lặp (chờ D6)                                                |
+| Readability & TS quality (2) | 1.5: `requireEnv` typed sạch; Prettier 5 file, `fill("")`, tên test, daily-log copy-paste      |
+| **Tổng**                     | **7.5 / 10**                                                                                   |
 
 **Kết luận: NEEDS FIX**. Score ≥ 7 nhưng còn 1 issue **High** (CI thiếu secrets). Issues: High 1 · Medium 3 · Low 5.
 Thứ tự nên làm: đổi password → thêm GitHub secrets + `env:` trong workflow → sửa 2 Medium ở `login.spec.ts` → `prettier --write`.

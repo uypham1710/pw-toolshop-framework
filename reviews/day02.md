@@ -3,13 +3,13 @@
 **Phạm vi:** commit `8101efc day02: TS basics (types, import type) + home smoke tests` (code chính: `src/data/types.ts`, `src/data/products.ts`, `tests/ui/home.smoke.spec.ts`, `playwright.config.ts`; phần còn lại là reformat Prettier + docs).
 **Mục tiêu D2 (roadmap):** TS basics cho tester (types, interface, async/await, import/export); viết smoke test trang chủ.
 
-| Mục tiêu                       | Trạng thái                                                                                              |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| types / interface              | ✅ `Category` (union literal) + `interface Product` có `readonly`                                       |
-| import / export                | ✅ `import type` đúng với `verbatimModuleSyntax`                                                        |
-| async/await                    | ✅ mọi Playwright call đều `await`, kể cả `expect`                                                      |
-| Smoke test trang chủ           | ✅ 3 test: title, product cards, Sign in link                                                           |
-| Gắn TS basics vào code thực tế | ⚠️ `types.ts`/`products.ts` chưa được dùng ở đâu, data là ví dụ chung chung (xem Medium #1)             |
+| Mục tiêu                       | Trạng thái                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| types / interface              | ✅ `Category` (union literal) + `interface Product` có `readonly`                           |
+| import / export                | ✅ `import type` đúng với `verbatimModuleSyntax`                                            |
+| async/await                    | ✅ mọi Playwright call đều `await`, kể cả `expect`                                          |
+| Smoke test trang chủ           | ✅ 3 test: title, product cards, Sign in link                                               |
+| Gắn TS basics vào code thực tế | ⚠️ `types.ts`/`products.ts` chưa được dùng ở đâu, data là ví dụ chung chung (xem Medium #1) |
 
 ## Kiểm tra tự động
 
@@ -72,13 +72,13 @@ Không có issue **High**.
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                         |
-| ---------------------------- | -------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 3 — tsc/eslint/test đều pass, đủ mục tiêu D2                                                  |
-| Locator & waiting (3)        | 2.5 — role-based, không wait thủ công; trừ cho `level: 5` và `toHaveCount` thay vì visible    |
-| Structure/POM (2)            | 1.5 — data/type chưa gắn với test (dead code), commit trộn format + feature                  |
-| Readability & TS quality (2) | 1.5 — type không theo domain thật, mảng mutable export, tên test lộn xộn, carry-over day01   |
-| **Tổng**                     | **8.5 / 10**                                                                                 |
+| Tiêu chí                     | Điểm                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| Correctness (3)              | 3 — tsc/eslint/test đều pass, đủ mục tiêu D2                                               |
+| Locator & waiting (3)        | 2.5 — role-based, không wait thủ công; trừ cho `level: 5` và `toHaveCount` thay vì visible |
+| Structure/POM (2)            | 1.5 — data/type chưa gắn với test (dead code), commit trộn format + feature                |
+| Readability & TS quality (2) | 1.5 — type không theo domain thật, mảng mutable export, tên test lộn xộn, carry-over day01 |
+| **Tổng**                     | **8.5 / 10**                                                                               |
 
 **Kết luận: PASS** (≥ 7, không có High). Issues: High 0 · Medium 2 · Low 6.
 

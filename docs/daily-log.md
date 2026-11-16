@@ -18,6 +18,7 @@ trả lời: Khi chạy local và một test fail, không mở trace viewer. vì
 dùng command: npx playwright test --trace on
 
 ## 2026-11-16
+
 **Học:**
 Typescript basics
 **Làm:**
@@ -56,10 +57,9 @@ page.getByLabel(/^email address/i)
 Web-first assertions + soft assertion
 **Làm:**
 Viết test cho login success, fail
-dùng assert để 
+dùng assert để
 **Blocker:**
-Flaky test khi search product
-solution: chờ cho product xuất hiện trong grid mới bắt đầu search
+CI bị Cloudflare chặn, local pass”. DoD của Day 4 chỉ yêu cầu npx playwright test pass ở local, nên việc này không chặn Day 4
 **Câu hỏi reviewer**
 Giả sử form login có thêm field label **"Confirm email address \*"**:
 (a) `page.getByLabel("Email address")` (không `exact`) sẽ match mấy element? Khi gọi `.fill()` thì Playwright làm gì, và vì sao nó **không** tự lấy element đầu tiên như `driver.find_element` của Selenium? (keyword: _strict mode_)

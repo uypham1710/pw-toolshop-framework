@@ -1,4 +1,4 @@
-    /**
+/**
  * Read a required environment variable.
  * Throws a clear error if it's missing or empty (fail fast).
  */
