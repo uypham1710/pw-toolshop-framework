@@ -1,9 +1,11 @@
+import { requireEnv } from "../config/env";
+
 export interface User {
     email: string;
     password: string;
 }
 
 export const testUser: User = {
-    email: "REDACTED_EMAIL",
-    password: "REDACTED_PASSWORD"
+    email: requireEnv("CUSTOMER_EMAIL"),
+    password: requireEnv("CUSTOMER_PASSWORD")
 };
