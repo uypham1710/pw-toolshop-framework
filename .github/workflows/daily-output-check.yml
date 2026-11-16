@@ -5,8 +5,8 @@ name: daily-output-check
 
 on:
   schedule:
-    - cron: "17 14 * * *"   # 14:17 UTC = 21:17 giờ VN (tránh phút :00 vì giờ chẵn hay bị trễ)
-  workflow_dispatch:         # cho phép bấm chạy tay để test
+    - cron: "17 14 * * *" # 14:17 UTC = 21:17 giờ VN (tránh phút :00 vì giờ chẵn hay bị trễ)
+  workflow_dispatch: # cho phép bấm chạy tay để test
 
 permissions:
   contents: read
