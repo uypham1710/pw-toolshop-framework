@@ -82,3 +82,101 @@ Mục tiêu D4 đã đủ: có happy path, 3 negative case, dùng web-first asse
 Ở test "Empty email and password" (`:41-42`):
 (a) Nếu dòng 41 (`expect.soft` cho `email-error`) fail, dòng 42 có chạy không? Kết quả cuối cùng của test là gì? Mỗi assertion soft chờ tối đa bao lâu trước khi kết luận fail, và giá trị đó config ở đâu trong `playwright.config.ts`?
 (b) Giả sử sau dòng 42 bạn thêm `await page.getByRole("button", { name: /login/i }).click()`. Khi đó việc dòng 41 dùng `expect.soft` thay vì `expect` có thể gây hại gì? Gợi ý: keyword `test.info().errors`.
+
+---
+
+## Re-review 19:20 (2026-11-16)
+
+**Commit:** `0532de8 day04: update reviewed code`
+**Files thay đổi:** `src/config/env.ts` (mới), `src/data/users.ts`, `playwright.config.ts`, `.env.example`, `package.json` (+`dotenv`), `docs/daily-log.md`
+**Không đổi:** `tests/ui/login.spec.ts`
+
+### Kiểm tra tự động
+
+| Lệnh                                    | Kết quả                                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit`                      | ✅ pass                                                                                                  |
+| `npx eslint .`                          | ✅ pass                                                                                                  |
+| `npx playwright test --reporter=list`   | ✅ 10/10 pass (chromium, 6 workers, 5.1s) — **local, có `.env`**                                         |
+| `npx prettier --check src tests playwright.config.ts` (thêm) | ⚠️ 5 file: `src/config/env.ts`, `src/data/users.ts`, `tests/ui/login.spec.ts`, `tests/ui/locators.spec.ts`, `playwright.config.ts` |
+
+### Trạng thái các issue cũ
+
+| Issue cũ                                     | Trạng thái                                                                                          |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [High] Credential hardcode                   | ✅ Code đã sạch (đọc từ env). ⚠️ Nhưng password cũ **vẫn nằm trong history** đã push → xem Medium #1 |
+| [Medium] Invalid password dùng chung account | ❌ Chưa sửa                                                                                         |
+| [Medium] `not.toHaveURL` pass ngay           | ❌ Chưa sửa                                                                                         |
+| [Low] `fill("")` thừa                        | ❌ Chưa sửa                                                                                         |
+| [Low] Locator + `goto` lặp                   | ⏳ OK để tới D5/D6                                                                                  |
+| [Low] Prettier                               | ❌ Tệ hơn: từ 3 lên 5 file                                                                          |
+| [Low] daily-log day04                        | ✅ Đã ghi (nhưng xem Low bên dưới)                                                                  |
+| [Low] Tên test                               | ❌ Chưa sửa                                                                                         |
+
+### Issues (re-review)
+
+**[High] `.github/workflows/playwright.yml:20-21` — CI không có `CUSTOMER_EMAIL`/`CUSTOMER_PASSWORD` → run trên GitHub sẽ fail**
+— `.env` bị gitignore (đúng), nên trên runner `ubuntu-latest` không có file này. `users.ts` gọi `requireEnv()` ngay lúc **import**, nên `login.spec.ts` sẽ throw khi Playwright load file. Kết quả: cả run có exit code ≠ 0, dù các test khác vẫn chạy. Local pass chỉ vì máy bạn có `.env`. Commit `0532de8` đã push lên `origin/main`, nên workflow đã chạy với code này. Mình không kiểm tra được vì máy không có `gh`. Hãy mở tab Actions để xem.
+— Đây là bẫy kinh điển "works on my machine". `requireEnv` đã fail fast rất đúng, chỉ là CI chưa được cấp biến.
+— Hint: keyword **GitHub Actions encrypted secrets** (Settings → Secrets and variables → Actions). Trong step "Run Playwright tests", thêm block `env:` map từng biến từ `secrets.*`. Docs: https://docs.github.com/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions. Kiểm chứng local: đổi tên `.env` tạm thời rồi chạy `npx playwright test`, bạn sẽ thấy đúng lỗi CI gặp.
+
+**[Medium] Git history — password cũ vẫn còn trong commit `5a6c646` đã push**
+— Sửa file ở commit sau không xoá nội dung cũ: `git show 5a6c646:src/data/users.ts` vẫn in ra credential. Review trước đã nói việc gấp nhất là **đổi password**. Mình không thấy dấu hiệu nào cho biết bạn đã làm việc đó.
+— Nếu bạn **chưa** đổi password (cả ở Toolshop lẫn mọi nơi dùng chung password đó) thì issue này vẫn là **High**.
+— Hint: (1) đổi password, rồi cập nhật `.env` và GitHub secret. (2) Tuỳ chọn: `git filter-repo` + force-push. (3) Cân nhắc chuyển sang demo account công khai của Toolshop.
+
+**[Medium] `tests/ui/login.spec.ts:15-24` — (carry-over) "Invalid password" vẫn dùng chung account thật với "Login success"**
+— Sắp bật secrets trên CI, mà `playwright.config.ts:20` lại có `retries: 2` trên CI. Mỗi lần retry là thêm một lần login sai vào **cùng** account, nên rủi ro bị lock giờ còn cao hơn trước.
+— Hint: giữ như review trước. Với negative case, dùng email không tồn tại (unique theo `testInfo.workerIndex`/timestamp).
+
+**[Medium] `tests/ui/login.spec.ts:22` — (carry-over) `not.toHaveURL("/account")` đứng trước assertion khẳng định nên pass ngay**
+— Hint: đảo thứ tự. Assert `login-error` trước, hoặc assert khẳng định `toHaveURL(/auth\/login/)`.
+
+**[Low] `src/data/users.ts:8-11` — `requireEnv` chạy lúc import (module-level side effect)**
+— Bất kỳ file nào `import { ... } from "../../src/data/users"` đều crash nếu thiếu env, kể cả khi file đó chỉ cần `interface User`. Python cũng vậy: `USER = os.environ["X"]` ở top-level `config.py` sẽ ném `KeyError` ngay khi bị import.
+— Hint: hiện tại chấp nhận được, và đây là fail fast có chủ đích. Khi tới fixtures (tuần 2–3) và `storageState`, hãy nghĩ tới việc đọc env **lazily**: dùng function/getter, hoặc đọc trong fixture/setup project. Như vậy chỉ test nào cần credential mới phụ thuộc vào env.
+
+**[Low] Prettier — 5 file chưa format, gồm cả 2 file mới sửa (`env.ts`, `users.ts` vẫn indent 4 space)**
+— Đây là lần thứ 3 issue này xuất hiện (day02→day04). Không nên sửa bằng tay nữa.
+— Hint: `npx prettier --write .`, thêm script `format:check`, và bật "format on save" trong VS Code. Sau này có thể chạy prettier trong CI hoặc pre-commit (keyword: `lint-staged`).
+
+**[Low] `tests/ui/login.spec.ts:38-39` + tên test ở `:4, 15, 26, 34` — (carry-over) `fill("")` thừa và tên test chưa mô tả kết quả mong đợi**
+
+**[Low] `docs/daily-log.md` — entry day04 bị copy-paste lẫn nội dung day03**
+— Mục "Câu hỏi reviewer" của day04 là câu hỏi + đáp án của **day03** (strict mode). Câu hỏi day04 về `expect.soft` (a)/(b) chưa có câu trả lời. Dòng "dùng assert để" bị bỏ dở. Các ngày 02–04 đều nằm chung heading `## 2026-11-16`, nên nếu muốn tách thì nên thêm sub-heading `### day04`.
+— Hint: trả lời câu hỏi `expect.soft` của review trước. Đó mới là phần kiểm tra bạn hiểu bài day04.
+
+**[Low] `playwright.config.ts:8` — dotenv v17+ in log `◇ injected env (0) from .env` ở mỗi worker**
+— Không sai (worker kế thừa env từ main process, nên thấy 0 biến mới), chỉ làm output bị nhiễu.
+— Hint: option `quiet` của `dotenv.config()`.
+
+### Thói quen Selenium/Python
+
+- Pattern `requireEnv` ≈ `os.environ["X"]` kèm message rõ hơn. Bạn đã mang sang **đúng cách**: fail fast thay vì `os.getenv("X", "")` lặng lẽ trả chuỗi rỗng.
+- "Pass ở local là xong": với Selenium + pytest chạy trên máy, bạn ít khi phải nghĩ tới runner sạch. Trong Playwright, CI là môi trường hạng nhất (đã có `forbidOnly`, `retries`, `workers` theo `process.env.CI`), nên mọi config/secret phải chạy được ở đó.
+
+### Làm tốt
+
+1. **`requireEnv` fail fast có message hướng dẫn** (`src/config/env.ts:5-13`): báo rõ tên biến và cách sửa ("Copy .env.example to .env"), thay vì để `undefined` lọt vào `fill()` rồi fail khó hiểu ở bước login. Đây cũng là ví dụ tốt về **type narrowing** của TS: `process.env[name]` có kiểu `string | undefined`, sau `if (!value) throw` thì TS biết `value` là `string`. Vì vậy return type `string` hợp lệ mà không cần `as string` hay `!`.
+2. **Tách đúng 3 lớp**: `src/config/env.ts` (đọc env), `src/data/users.ts` (data typed bằng `interface User`), `.env.example` (tài liệu tên biến), và `.env` đã được `.gitignore`. Cấu trúc này khớp với `src/config` và `src/data` trong CLAUDE.md.
+3. **`dotenv.config()` gọi một lần trong `playwright.config.ts`**: không rải `dotenv` vào từng spec. Worker tự kế thừa `process.env`.
+
+### Score (re-review)
+
+| Tiêu chí                     | Điểm                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2: local pass, credential ra khỏi code; trừ vì CI thiếu secrets và rủi ro account lock vẫn còn    |
+| Locator & waiting (3)        | 2.5: không đổi; `not.toHaveURL` vẫn đứng trước                                                    |
+| Structure/POM (2)            | 1.5: tách config/data tốt; locator lặp (chờ D6)                                                   |
+| Readability & TS quality (2) | 1.5: `requireEnv` typed sạch; Prettier 5 file, `fill("")`, tên test, daily-log copy-paste          |
+| **Tổng**                     | **7.5 / 10**                                                                                      |
+
+**Kết luận: NEEDS FIX**. Score ≥ 7 nhưng còn 1 issue **High** (CI thiếu secrets). Issues: High 1 · Medium 3 · Low 5.
+Thứ tự nên làm: đổi password → thêm GitHub secrets + `env:` trong workflow → sửa 2 Medium ở `login.spec.ts` → `prettier --write`.
+
+### Câu hỏi kiểm tra hiểu bài
+
+Giả sử server Toolshop chậm và `login-error` (`login.spec.ts:23`) chỉ hiện ra sau **7 giây**:
+(a) Với config hiện tại, test "Invalid password" pass hay fail? Vì sao? Nêu rõ timeout mặc định của `expect` và của action (`click`).
+(b) Nếu viết thành `expect(await page.getByTestId("login-error").textContent()).toMatch(/invalid/i)` thì kết quả khác gì? Hãy giải thích bằng khái niệm "retry".
+(c) Làm sao tăng timeout **chỉ cho đúng một assertion** đó, không đổi global? Và trong `playwright.config.ts`, option nào đổi timeout cho mọi `expect`?
