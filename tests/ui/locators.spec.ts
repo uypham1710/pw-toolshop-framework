@@ -7,11 +7,13 @@ test("Navigate to login page", async ({ page }) => {
 });
 
 test("Fill login form", async ({ page }) => {
+    const email = page.getByLabel(/email address/i);
+    const password = page.getByLabel(/^password/i);
     await page.goto("/auth/login");
-    await page.getByLabel("Email address *", { exact: true }).fill("test@example.com");
-    await page.getByLabel("Password *", { exact: true }).fill("123456");
-    await expect(page.getByLabel("Email address *", { exact: true })).toHaveValue("test@example.com");
-    await expect(page.getByLabel("Password *", { exact: true })).toHaveValue("123456");
+    await email.fill("test@example.com");
+    await password.fill("123456");
+    await expect(email).toHaveValue("test@example.com");
+    await expect(password).toHaveValue("123456");
 });
 
 test("Search for a product", async ({ page }) => {
@@ -19,7 +21,7 @@ test("Search for a product", async ({ page }) => {
     const product = page.getByTestId("product-name");
     await page.goto("/");
     await expect(product.first()).toBeVisible();
-    await page.getByTestId("search-query").fill(productName);
+    await page.getByRole("textbox", { name: /search/i }).fill(productName);
     await page.getByRole("button", { name: "Search" }).click();
     await expect(page.getByTestId("search-caption")).toHaveText(`Searched for: ${productName}`);
     await expect(product).toHaveCount(1);

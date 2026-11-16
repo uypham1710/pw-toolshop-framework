@@ -44,3 +44,10 @@ test id: dùng khi không thể get by role,text,...
 **Blocker:**
 Flaky test khi search product
 solution: chờ cho product xuất hiện trong grid mới bắt đầu search
+**Câu hỏi reviewer**
+Giả sử form login có thêm field label **"Confirm email address \*"**:
+(a) `page.getByLabel("Email address")` (không `exact`) sẽ match mấy element? Khi gọi `.fill()` thì Playwright làm gì, và vì sao nó **không** tự lấy element đầu tiên như `driver.find_element` của Selenium? (keyword: _strict mode_)
+match 2 element, khi gọi fill sẽ không action được mà quăng về lỗi strict mode
+Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fill nhầm sang ô “Confirm email” chỉ vì thứ tự trong DOM thay đổi. Test vẫn chạy tiếp, có khi còn pass, nghĩa là sai mà không ai biết.
+(b) Viết lại locator đó sao cho vẫn **không** phụ thuộc dấu `*` mà chỉ match đúng field "Email address". Chỉ cần mô tả hướng làm (regex hay option nào), không cần code đầy đủ.
+page.getByLabel(/^email address/i)
