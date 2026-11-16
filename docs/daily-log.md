@@ -34,3 +34,13 @@ test fail và không báo lỗi rõ ràng về title sai, mà là Test Ended
 Không có await thì test function chạy tới cuối và kết thúc ngay, assertion bị cắt ngang nên Playwright báo Test ended chứ không báo title sai.”
 (b) Trong repo này, công cụ nào sẽ bắt lỗi đó _trước khi_ chạy test, và rule tên gì?
 công cụ eslint, rule: @typescript-eslint/no-floating-promises
+
+**Học:**
+Locator
+**Làm:**
+Role: ưu tiên dùng, dùng cho các element có thể tương tác được (button, link, checkbox, ...)
+Label: thường dùng cho các field trong form có label
+test id: dùng khi không thể get by role,text,...
+**Blocker:**
+Flaky test khi search product
+solution: chờ cho product xuất hiện trong grid mới bắt đầu search
