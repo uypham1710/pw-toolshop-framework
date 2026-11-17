@@ -1,43 +1,44 @@
 import { test, expect } from "@playwright/test";
+import { HomePage } from "../../src/pages/HomePage";
 
 test.describe("Search tests", () => {
-    test.beforeEach(async ({ page }) => {
-        await page.goto("/");
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("Search for a product", { tag: ["@smoke"] }, async ({ page }) => {
+    const homePage = new HomePage(page);
+    const keyword = "hammer";
+    const results = homePage.searchResults;
+
+    await test.step("Search for product", async () => {
+      await homePage.searchKeyword(keyword);
     });
 
-    test("Search for a product", { tag: ["@smoke"] }, async ({ page }) => {
-        const keyword = "hammer";
-        const results = page.getByTestId("search_completed").getByTestId("product-name");
+    await test.step("Verify search results", async () => {
+      await expect(results.first()).toBeVisible();
+      await expect(results).not.toHaveCount(0);
+      await expect(results.filter({ hasNotText: keyword })).toHaveCount(0);
+    });
+  });
 
-        await test.step("Search for product", async () => {
-            await page.getByRole("textbox", { name: /search/i }).fill(keyword);
-            await page.getByRole("button", { name: "Search" }).click();
-        });
+  test("No result search", { tag: ["@regression"] }, async ({ page }) => {
+    const homePage = new HomePage(page);
+    const searchKey = "abc";
+    const product = homePage.productName;
+    await expect(product.first()).toBeVisible();
 
-        await test.step("Verify search results", async () => {
-            await expect(results.first()).toBeVisible();
-            await expect(results).not.toHaveCount(0);
-            await expect(results.filter({ hasNotText: keyword })).toHaveCount(0);
-        });
+    await test.step("Search for product", async () => {
+      await homePage.searchKeyword(searchKey);
     });
 
-    test("No result search", { tag: ["@regression"] }, async ({ page }) => {
-        const searchKey = "abc";
-        const product = page.getByTestId("product-name");
-        await expect(product.first()).toBeVisible();
-
-        await test.step("Search for product", async () => {
-            await page.getByRole("textbox", { name: /search/i }).fill(searchKey);
-            await page.getByRole("button", { name: "Search" }).click();
-        });
-
-        await test.step("Verify no results displayed", async () => {
-            await expect(page.getByTestId("search-caption")).toHaveText(
-                `Searched for: ${searchKey}`,
-            );
-            await expect(page.getByTestId("search_completed")).toHaveText(
-                "There are no products found.",
-            );
-        });
+    await test.step("Verify no results displayed", async () => {
+      await expect(homePage.searchCaption).toHaveText(
+        `Searched for: ${searchKey}`,
+      );
+      await expect(homePage.searchCompletedText).toHaveText(
+        "There are no products found.",
+      );
     });
+  });
 });

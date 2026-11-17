@@ -5,8 +5,8 @@
 
 ## Kiểm tra tự động
 
-| Lệnh                                  | Kết quả                                    |
-| ------------------------------------- | ------------------------------------------ |
+| Lệnh                                  | Kết quả                                     |
+| ------------------------------------- | ------------------------------------------- |
 | `npx tsc --noEmit`                    | ✅ 0 lỗi                                    |
 | `npx eslint .`                        | ✅ 0 lỗi                                    |
 | `npx playwright test --reporter=list` | ✅ 12/12 passed, 6 workers, 9.8s (chromium) |
@@ -17,11 +17,13 @@ Mục tiêu D5 đạt về số lượng: 4 test login + 2 test search, có `des
 
 **[Medium] tests/ui/search.spec.ts:22-23 — assertion của "Search for a product" có thể pass khi kết quả search chưa hiện ra**
 — Vì sao:
+
 1. Trên Toolshop, sản phẩm **đầu tiên ở trang chủ chính là "Combination Pliers"** (mình đã kiểm tra qua API `/products?page=1`). Nên `product.first()` toContainText("Pliers") ở dòng 22 **pass ngay với danh sách cũ trước khi search**. Assertion này không chứng minh được gì.
 2. `product.filter({ hasNotText: productName })` toHaveCount(0) ở dòng 23 sẽ **pass "vacuously" (pass suông)** nếu list đang rỗng, ví dụ đúng lúc Angular xoá list cũ để render list mới. Dù search có trả kết quả sai thì test vẫn có thể pass, tức là false-pass.
 3. `search-caption` ở dòng 19 chỉ chứng minh caption đã đổi, không chứng minh grid sản phẩm đã render xong.
-Đây là test `@smoke`. Test smoke mà false-pass còn nguy hiểm hơn test fail.
-— Hint:
+   Đây là test `@smoke`. Test smoke mà false-pass còn nguy hiểm hơn test fail.
+   — Hint:
+
 - Bạn đã dùng `data-test="search_completed"` ở test "No result". Hãy xem element đó có xuất hiện ở case **có kết quả** không. Nếu có thì nó là tín hiệu "search xong" để chờ trước khi assert list.
 - Thêm một assertion **positive** rằng list không rỗng trước khi assert "không có item nào sai". Keyword: `not.toHaveCount(0)`. Thứ tự đúng là "có item" rồi mới tới "không item nào lệch".
 - Chọn search term mà sản phẩm đầu trang chủ **không** match, để assertion thật sự phân biệt được trạng thái trước và sau search.
@@ -57,7 +59,7 @@ Mục tiêu D5 đạt về số lượng: 4 test login + 2 test search, có `des
 — Hint: keyword `--grep`, `--grep-invert`, npm scripts.
 
 **[Low] docs/daily-log.md:79 — mục "Câu hỏi reviewer" để trống, câu hỏi day04 (`toHaveURL`) chưa trả lời**
-— Vì sao: mục "Học" hiện chỉ chép lại commit message. Daily-log có giá trị khi ghi điều *mới hiểu ra*, ví dụ khác biệt `beforeEach` vs `beforeAll`, hay tag hiển thị thế nào trong report.
+— Vì sao: mục "Học" hiện chỉ chép lại commit message. Daily-log có giá trị khi ghi điều _mới hiểu ra_, ví dụ khác biệt `beforeEach` vs `beforeAll`, hay tag hiển thị thế nào trong report.
 — Hint: trả lời câu hỏi day04 và câu hỏi cuối review này vào log.
 
 ## Làm tốt
@@ -68,13 +70,13 @@ Mục tiêu D5 đạt về số lượng: 4 test login + 2 test search, có `des
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                    |
-| ---------------------------- | --------------------------------------------------------------------------------------- |
-| Correctness (3)              | 2.5: suite xanh, đủ mục tiêu D5; trừ 0.5 vì smoke search có nguy cơ false-pass          |
-| Locator & waiting (3)        | 2.5: locator tốt (role/label/testid); trừ 0.5 vì chưa chờ đúng tín hiệu "search xong"   |
-| Structure/POM (2)            | 1.5: describe + hook gọn; còn lặp locator (chờ D6) và file bài tập trùng test           |
-| Readability & TS quality (2) | 1.5: tag/step chưa nhất quán, `fill("")` carry-over, scripts rỗng, daily-log thiếu      |
-| **Tổng**                     | **8.0 / 10**                                                                            |
+| Tiêu chí                     | Điểm                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2.5: suite xanh, đủ mục tiêu D5; trừ 0.5 vì smoke search có nguy cơ false-pass        |
+| Locator & waiting (3)        | 2.5: locator tốt (role/label/testid); trừ 0.5 vì chưa chờ đúng tín hiệu "search xong" |
+| Structure/POM (2)            | 1.5: describe + hook gọn; còn lặp locator (chờ D6) và file bài tập trùng test         |
+| Readability & TS quality (2) | 1.5: tag/step chưa nhất quán, `fill("")` carry-over, scripts rỗng, daily-log thiếu    |
+| **Tổng**                     | **8.0 / 10**                                                                          |
 
 **Kết luận: PASS** ✅. Score ≥ 7, không có issue High. Issues: High 0 · Medium 1 · Low 8.
 Ưu tiên sửa issue Medium ở search.spec trước khi sang D6, vì test đó sẽ được refactor sang POM và nên mang theo assertion đúng.

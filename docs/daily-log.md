@@ -69,6 +69,7 @@ Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fi
 page.getByLabel(/^email address/i)
 
 ## 2026-11-17
+
 **Học:**
 describe, hooks, tags, test.step for login/search
 **Làm:**
@@ -98,3 +99,12 @@ Khó đọc. Đọc một test, bạn không biết email đến từ đâu nế
 
 D6, POM: class LoginPage với constructor(private readonly page: Page) và các Locator readonly. Locator được khai báo một lần, type an toàn, không bị gán lại.
 D7, custom fixture test.extend: fixture inject loginPage thẳng vào test qua async ({ loginPage }) => .... Mỗi test nhận một instance riêng, không có biến module-level, không cần beforeEach để gán.
+
+**Học:**
+POM, refactor test theo POM
+**Làm:**
+Tạo LoginPage và HomePage, refator lại locator và actions trong page
+refactor test file, sử dụng POM
+**Blocker:**
+None
+**Câu hỏi reviewer**
