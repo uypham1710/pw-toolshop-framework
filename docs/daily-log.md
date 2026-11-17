@@ -67,3 +67,13 @@ match 2 element, khi gọi fill sẽ không action được mà quăng về lỗ
 Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fill nhầm sang ô “Confirm email” chỉ vì thứ tự trong DOM thay đổi. Test vẫn chạy tiếp, có khi còn pass, nghĩa là sai mà không ai biết.
 (b) Viết lại locator đó sao cho vẫn **không** phụ thuộc dấu `*` mà chỉ match đúng field "Email address". Chỉ cần mô tả hướng làm (regex hay option nào), không cần code đầy đủ.
 page.getByLabel(/^email address/i)
+
+## 2026-11-17
+**Học:**
+describe, hooks, tags, test.step for login/search
+**Làm:**
+thêm test.describe, test.step, tags smoke và regression
+Khi chạy: npx playwright test --grep "@smoke" sẽ chỉ chạy 2 test cases có tag smoke
+**Blocker:**
+None
+**Câu hỏi reviewer**
