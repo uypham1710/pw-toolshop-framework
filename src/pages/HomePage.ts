@@ -5,9 +5,9 @@ export class HomePage {
   readonly searchBox: Locator;
   readonly searchButton: Locator;
   readonly searchResults: Locator;
-  readonly productName: Locator;
+  readonly productNames: Locator;
   readonly searchCaption: Locator;
-  readonly searchCompletedText: Locator;
+  readonly searchResultsContainer: Locator;
   constructor(page: Page) {
     this.page = page;
     this.searchBox = page.getByRole("textbox", { name: /search/i });
@@ -15,9 +15,9 @@ export class HomePage {
     this.searchResults = page
       .getByTestId("search_completed")
       .getByTestId("product-name");
-    this.productName = page.getByTestId("product-name");
+    this.productNames = page.getByTestId("product-name");
     this.searchCaption = page.getByTestId("search-caption");
-    this.searchCompletedText = page.getByTestId("search_completed");
+    this.searchResultsContainer = page.getByTestId("search_completed");
   }
 
   async searchKeyword(keyword: string): Promise<void> {

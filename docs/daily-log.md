@@ -108,3 +108,33 @@ refactor test file, sử dụng POM
 **Blocker:**
 None
 **Câu hỏi reviewer**
+(a) Constructor có throw lỗi không?
+Không. `page.getByLabel(...)` là hàm đồng bộ, trả về `Locator` chứ không phải `Promise`, nên không cần `await`.
+Lúc tạo Locator, Playwright KHÔNG gửi lệnh nào tới browser. Vì vậy dù trang đang là `about:blank`, `new LoginPage(page)` vẫn chạy bình thường.
+
+Selenium thì khác: `driver.find_element(...)` là một lệnh WebDriver, gửi HTTP request tới driver ngay lúc gọi.
+Nếu gọi trong `__init__` khi trang chưa mở, nó sẽ ném `NoSuchElementException` ngay lập tức.
+Kể cả khi tìm được, nó cũng chỉ trả về một element cố định tại thời điểm đó.
+Vì thế Selenium phải dùng cách "lazy":
+- Java: `PageFactory.initElements` + `@FindBy` tạo **proxy**. Mỗi lần gọi method trên field, proxy mới thật sự gọi `find_element`.
+- Python: lưu tuple `(By.ID, "email")` trong page class, rồi mỗi action tự gọi `find_element(*locator)`.
+Playwright Locator có sẵn tính lazy đó, không cần PageFactory.
+
+(b) Locator lưu cái gì, và khi nào mới tìm element?
+Locator chỉ là một "recipe": tham chiếu tới `page`/frame + chuỗi selector (cộng các điều kiện chain như `filter`, `nth`).
+Nó KHÔNG giữ element hay DOM node nào. `toString()` chỉ in ra mô tả selector.
+Playwright chỉ resolve recipe thành element khi có action (`click`, `fill`...) hoặc assertion (`expect(...).toBeVisible()`...).
+Mỗi lần resolve:
+- Tìm lại element trong DOM hiện tại.
+- Kiểm tra strict mode (match đúng 1 element với action).
+- Auto-wait actionability checks (visible, stable, enabled, receives events...) tới khi đạt hoặc hết timeout.
+- Với web-first assertion, Playwright resolve lại liên tục và retry cho tới khi pass hoặc timeout.
+
+(c) Vì sao `readonly` Locator an toàn khi reload/re-render, còn WebElement bị stale?
+`WebElement` giữ một element reference id trỏ tới MỘT DOM node cụ thể.
+Khi trang reload hoặc Angular re-render form, node cũ bị gỡ khỏi DOM và node mới thay vào.
+Reference cũ vẫn trỏ tới node đã bị gỡ, nên gọi tiếp sẽ nhận `StaleElementReferenceException`.
+`Locator` không giữ node nào. Mỗi action/assertion đều resolve lại từ recipe trên DOM hiện tại, nên luôn lấy đúng node mới nhất.
+Vì recipe không bao giờ "hết hạn", không cần gán lại. Đó là lý do khai báo `readonly` vừa an toàn vừa đúng ý nghĩa: định nghĩa một lần, dùng suốt vòng đời page object.
+Playwright cũng có thứ tương đương WebElement là `ElementHandle`, nhưng docs khuyên không dùng (discouraged) vì nó trỏ tới một node cố định và có thể bị detached giống stale element. Nên dùng Locator thay thế.
+Docs: https://playwright.dev/docs/locators · https://playwright.dev/docs/api/class-elementhandle

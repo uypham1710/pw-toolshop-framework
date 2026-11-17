@@ -11,19 +11,19 @@ test.describe("Login tests", () => {
     const loginPage = new LoginPage(page);
     await loginPage.login(testUser.email, testUser.password);
     await expect(page).toHaveURL("/account");
-    await expect(page.getByTestId("page-title")).toHaveText("My account");
+    await expect(loginPage.pageTitle).toHaveText("My account");
   });
 
   test("Invalid password", { tag: ["@regression"] }, async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.login("test@example.com", "123456");
-    await expect(page.getByTestId("login-error")).toHaveText(
+    await expect(loginPage.loginError).toHaveText(
       /invalid email or password/i,
     );
     await expect(page).not.toHaveURL("/account");
   });
 
-  test("Invalid email", async ({ page }) => {
+  test("Invalid email",  { tag: ["@regression"] }, async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.login("abc.com", "");
     await expect(loginPage.emailError).toHaveText(/email format is invalid/i);

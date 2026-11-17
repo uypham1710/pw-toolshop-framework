@@ -16,7 +16,6 @@ test.describe("Search tests", () => {
     });
 
     await test.step("Verify search results", async () => {
-      await expect(results.first()).toBeVisible();
       await expect(results).not.toHaveCount(0);
       await expect(results.filter({ hasNotText: keyword })).toHaveCount(0);
     });
@@ -25,8 +24,6 @@ test.describe("Search tests", () => {
   test("No result search", { tag: ["@regression"] }, async ({ page }) => {
     const homePage = new HomePage(page);
     const searchKey = "abc";
-    const product = homePage.productName;
-    await expect(product.first()).toBeVisible();
 
     await test.step("Search for product", async () => {
       await homePage.searchKeyword(searchKey);
@@ -36,9 +33,10 @@ test.describe("Search tests", () => {
       await expect(homePage.searchCaption).toHaveText(
         `Searched for: ${searchKey}`,
       );
-      await expect(homePage.searchCompletedText).toHaveText(
+      await expect(homePage.searchResultsContainer).toHaveText(
         "There are no products found.",
       );
+      await expect(homePage.searchResults).toHaveCount(0);
     });
   });
 });
