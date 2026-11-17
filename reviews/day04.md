@@ -181,3 +181,145 @@ Giả sử server Toolshop chậm và `login-error` (`login.spec.ts:23`) chỉ h
 (a) Với config hiện tại, test "Invalid password" pass hay fail? Vì sao? Nêu rõ timeout mặc định của `expect` và của action (`click`).
 (b) Nếu viết thành `expect(await page.getByTestId("login-error").textContent()).toMatch(/invalid/i)` thì kết quả khác gì? Hãy giải thích bằng khái niệm "retry".
 (c) Làm sao tăng timeout **chỉ cho đúng một assertion** đó, không đổi global? Và trong `playwright.config.ts`, option nào đổi timeout cho mọi `expect`?
+
+---
+
+## Re-review 21:34 (2026-11-16)
+
+**Commits:** `01de505 day04: update CI`, `1c67147 day04: update test script based on review`
+**Files thay đổi:** `.github/workflows/playwright.yml`, `tests/ui/login.spec.ts`, `tests/ui/locators.spec.ts`, `src/data/users.ts`, `src/config/env.ts`, `playwright.config.ts`, `docs/daily-log.md`, `reviews/*.md` (format)
+
+### Kiểm tra tự động
+
+| Lệnh                                  | Kết quả                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit`                    | ✅ pass                                                                                                       |
+| `npx eslint .`                        | ✅ pass                                                                                                       |
+| `npx prettier --check .` (thêm)       | ✅ All matched files use Prettier code style                                                                  |
+| `npx playwright test --reporter=list` | ❌ **9 pass · 1 fail**: `login.spec.ts:4 › Login success`, fail ổn định (chạy lại `--repeat-each=2` vẫn fail) |
+
+Lỗi: `expect(page).toHaveURL("/account")` timeout 5000ms, URL vẫn là `/auth/login`. `error-context.md` cho thấy trang hiện **"Invalid email or password"**. Server từ chối credential trong `.env`.
+
+### Trạng thái các issue cũ
+
+| Issue cũ                                     | Trạng thái                                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [High] CI thiếu secrets                      | ✅ Đã thêm `env:` map từ `secrets.*` (mình không kiểm tra được bạn đã tạo secret trên GitHub chưa)    |
+| [Medium] Password cũ trong git history       | ⏳ Không xác minh được. Test fail vì sai credential có thể là dấu hiệu bạn đã đổi password → xem High |
+| [Medium] Invalid password dùng chung account | ✅ Đã chuyển sang `test@example.com`, không đụng account thật                                         |
+| [Medium] `not.toHaveURL` pass ngay           | ✅ Đã đảo: assert `login-error` trước, phủ định sau                                                   |
+| [Low] `requireEnv` lúc import                | ⏳ OK để tới tuần 2–3 (fixtures)                                                                      |
+| [Low] Prettier                               | ✅ Sạch toàn repo, kể cả newline cuối file                                                            |
+| [Low] `fill("")` thừa + tên test             | ❌ Chưa sửa                                                                                           |
+| [Low] daily-log copy-paste                   | ❌ Chưa sửa, và có thêm lỗi mới (xem Low bên dưới)                                                    |
+| [Low] dotenv log nhiễu                       | ❌ Chưa sửa (không quan trọng)                                                                        |
+
+### Issues (re-review 2)
+
+**[High] `tests/ui/login.spec.ts:4-13` — "Login success" fail ở local vì credential trong `.env` không còn đăng nhập được**
+— Code test không sai. Nhưng theo rule review, test fail thì đây là High. Có 2 khả năng: (1) bạn đã đổi password trên Toolshop theo review trước nhưng chưa cập nhật `.env`; (2) Toolshop reset DB định kỳ nên account tự đăng ký đã bị xoá (review đầu đã cảnh báo). Daily-log ghi "local pass", nhưng giờ điều đó không còn đúng.
+— Hint: login tay trên site bằng đúng giá trị trong `.env` để biết là khả năng (1) hay (2). Nếu là (2) thì đây là lý do mạnh để chuyển sang **demo account công khai** trong README của repo `testsmith-io/practice-software-testing`. Account đó được seed lại sau mỗi lần reset. Nhớ cập nhật **cả** `.env` lẫn GitHub secret.
+— Thói quen cần bỏ: "pass lúc commit là xong". Test phụ thuộc dữ liệu bên ngoài (account trên server) có thể hỏng dù code không đổi. Trước khi ghi "local pass" vào log, hãy chạy lại toàn bộ suite.
+
+**[Low] `tests/ui/login.spec.ts:19` — Email cố định `test@example.com` cho negative case**
+— Toolshop là site công khai, nên ai cũng có thể đăng ký `test@example.com`. Nếu account đó tồn tại và bị nhiều người login sai, server có thể trả về message "account locked" thay vì "Invalid email or password", và test sẽ fail mà không do lỗi của bạn. Xác suất thấp, nhưng email cố định vẫn là shared state.
+— Hint: tạo email **unique và chắc chắn không tồn tại** (timestamp/`crypto.randomUUID()`, hoặc `testInfo.workerIndex`), dùng domain như `example.invalid`. Tới D9 (factory) thì đưa vào `src/data`.
+
+**[Low] `tests/ui/login.spec.ts:42-43` + tên test `:4, 15, 28, 38` — (carry-over lần 3) `fill("")` thừa, tên test chưa nói kết quả mong đợi**
+
+**[Low] `docs/daily-log.md` (day04) — log chưa phản ánh đúng thực tế**
+— Dòng "dùng assert để" vẫn bỏ dở. Blocker có dấu `”` thừa ở cuối và ghi "local pass" (giờ đã fail). Mục "Câu hỏi reviewer" vẫn là đáp án **day03** (strict mode). Hai bộ câu hỏi day04 (`expect.soft` (a)/(b) và timeout 7 giây (a)/(b)/(c)) chưa được trả lời.
+— Ghi chú "CI bị Cloudflare chặn" là phát hiện đáng giá. Hãy ghi kèm **bằng chứng** (link run, status code / text trang chặn) để sau này (D23) còn quay lại xử lý.
+
+**[Low] `package.json` — `prettier` không có trong `devDependencies`, `scripts` vẫn rỗng**
+— Lệnh `npx prettier` vẫn chạy được trên máy bạn, nhưng version không được lock, nên máy khác hoặc CI có thể format khác.
+— Hint: cài prettier làm devDependency, rồi thêm scripts `test`, `lint`, `typecheck`, `format:check`. Python tương đương: ghi vào `requirements-dev.txt` + `Makefile`/`tox`.
+
+### Làm tốt
+
+1. **Thứ tự assertion đúng** (`login.spec.ts:22-25`): `toHaveText(/invalid email or password/i)` đứng trước nên đóng vai trò "điểm đồng bộ", tức là chờ server trả lời xong. Sau đó `not.toHaveURL("/account")` mới có ý nghĩa. Bạn đã hiểu đúng bản chất "negative assertion pass ngay".
+2. **Tách negative test khỏi account thật** (`:19`): giờ `retries: 2` trên CI không còn cộng dồn lần login sai vào account dùng cho happy path, nên rủi ro lock đã được loại bỏ ở gốc.
+3. **Secrets chỉ gắn vào đúng step chạy test** (`playwright.yml:22-24`), không đặt `env:` ở cấp job. Step `npm ci` và `playwright install` không nhìn thấy password. Đây là nguyên tắc least privilege, cách làm đúng.
+
+### Score (re-review 2)
+
+| Tiêu chí                     | Điểm                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 1.5: logic test đúng, đã sửa hết Medium; nhưng suite đang fail 1/10 ở local vì credential/account |
+| Locator & waiting (3)        | 3: role/label/testid hợp lý, không wait thủ công, thứ tự web-first assertion đã đúng              |
+| Structure/POM (2)            | 1.5: config/data/env tách tốt; locator + `goto` vẫn lặp (chờ D5/D6)                               |
+| Readability & TS quality (2) | 1.5: Prettier sạch 100%; trừ `fill("")`, tên test, daily-log                                      |
+| **Tổng**                     | **7.5 / 10**                                                                                      |
+
+**Kết luận: NEEDS FIX**. Score ≥ 7 nhưng còn 1 issue **High** (Login success fail). Issues: High 1 · Medium 0 · Low 4.
+Chỉ cần làm cho "Login success" pass lại (sửa `.env`/account + GitHub secret) là đạt PASS. Các Low có thể gộp vào D5.
+
+### Câu hỏi kiểm tra hiểu bài
+
+Log fail của "Login success" có đoạn:
+
+```
+Expect "toHaveURL" with timeout 5000ms
+  14 × locator resolved to <html ...>
+     - unexpected value "https://practicesoftwaretesting.com/auth/login"
+```
+
+(a) "14 ×" nghĩa là gì? Vì sao test mất ~5 giây mới fail, chứ không fail ngay sau `click()`?
+(b) Bạn phải mở `error-context.md` mới biết lý do thật ("Invalid email or password"). Nếu muốn **ngay message lỗi** đã cho thấy lý do, bạn sẽ thêm assertion web-first nào, và đặt ở đâu? (gợi ý: `login-error` + `not.toBeVisible()`/`toBeHidden()`. Hãy nghĩ xem nó có bị lỗi "pass ngay" như `not.toHaveURL` không, vì sao?)
+
+## Re-review 21:45 (2026-11-16)
+
+**Commits:** không có commit mới kể từ re-review 21:34 (HEAD vẫn là `1c67147`). Code không đổi. Thay đổi duy nhất là `.env` (sửa lúc 21:41, không được git track).
+
+### Kiểm tra tự động
+
+| Lệnh                                                         | Kết quả                                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `npx tsc --noEmit`                                           | ✅ pass                                                                   |
+| `npx eslint .`                                               | ✅ pass                                                                   |
+| `npx playwright test --reporter=list`                        | ✅ **10/10 pass** (6 workers, 6.0s)                                       |
+| `npx playwright test tests/ui/login.spec.ts --repeat-each=3` | ✅ 12/12 pass, nên "Login success" ổn định, không phải pass may mắn 1 lần |
+
+### Trạng thái các issue cũ
+
+| Issue cũ                                             | Trạng thái                                                                                                                             |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [High] "Login success" fail vì credential            | ✅ Đã fix qua `.env`. ⚠️ Nhớ cập nhật **cả GitHub secret** `CUSTOMER_EMAIL`/`CUSTOMER_PASSWORD` với giá trị mới, nếu không CI vẫn fail |
+| [Medium] Password cũ trong git history               | ⏳ Nếu giá trị mới là một password **khác** password đã từng commit thì coi như xử lý xong. Nếu không, hãy đổi password                |
+| [Low] Email cố định `test@example.com`               | ❌ Chưa sửa (OK để tới D9 factory)                                                                                                     |
+| [Low] `fill("")` thừa + tên test                     | ❌ Chưa sửa (carry-over lần 4). Nên làm ở D5 khi gom vào `test.describe`                                                               |
+| [Low] daily-log day04                                | ❌ Chưa sửa: dòng "dùng assert để" bỏ dở, có dấu `”` thừa, mục "Câu hỏi reviewer" vẫn copy của day03, câu hỏi day04 chưa trả lời       |
+| [Low] `package.json` thiếu prettier + `scripts` rỗng | ❌ Chưa sửa                                                                                                                            |
+
+### Issues (re-review 3)
+
+Không có issue High hay Medium mới. Còn 4 Low carry-over ở bảng trên, không lặp lại chi tiết (xem re-review 21:34).
+
+**[Low] Quy trình — sửa môi trường nhưng không để lại dấu vết**
+— Fix lần này nằm hoàn toàn trong `.env` (không commit, đúng rule). Nhưng vì thế git log không cho biết vì sao test từ fail chuyển sang pass. Ở đội thật, người khác pull code về sẽ vẫn fail mà không hiểu lý do.
+— Hint: ghi 1 dòng vào `docs/daily-log.md` mục Blocker: nguyên nhân (đổi password hay account bị reset), cách xử lý, đã cập nhật GitHub secret chưa. Nếu nguyên nhân là "Toolshop reset DB", đó chính là lý do sau này (D14) nên **tạo user bằng API** trong setup thay vì phụ thuộc account tạo tay.
+
+### Làm tốt
+
+1. **Xử lý High đúng chỗ**: bạn sửa dữ liệu môi trường (`.env`) chứ không "chữa cháy" bằng cách sửa test, hạ assertion hay thêm `retries`. Lỗi nằm ở data thì fix ở data. Selenium-team hay có phản xạ "test đỏ thì thêm wait/retry", và bạn đã tránh được.
+2. **Suite chạy song song 6 workers, 10/10 xanh trong 6 giây**, không có `waitForTimeout`/sleep nào. Toàn bộ đồng bộ dựa vào auto-wait + web-first assertion. Đây đúng là mục tiêu D4.
+
+### Score (re-review 3)
+
+| Tiêu chí                     | Điểm                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| Correctness (3)              | 2.5: suite xanh và ổn định; trừ 0.5 vì email cố định cho negative case + CI secret chưa xác minh |
+| Locator & waiting (3)        | 3: không đổi so với lần trước, vẫn chuẩn                                                         |
+| Structure/POM (2)            | 1.5: locator + `goto` lặp giữa các test (chờ D5/D6)                                              |
+| Readability & TS quality (2) | 1.5: `fill("")`, tên test, `package.json` scripts, daily-log                                     |
+| **Tổng**                     | **8.5 / 10**                                                                                     |
+
+**Kết luận: PASS** ✅. Score ≥ 7 và không còn issue High. Issues: High 0 · Medium 0 · Low 5.
+Việc cần làm trước khi sang D5: (1) cập nhật GitHub secret rồi xem CI run, (2) hoàn thiện daily-log day04 và trả lời các câu hỏi day04 còn nợ. Các Low về code có thể gộp vào D5 (`test.describe` + `beforeEach` sẽ tự giải quyết phần lặp `goto`/locator).
+
+### Câu hỏi kiểm tra hiểu bài
+
+`login.spec.ts:11` dùng `await expect(page).toHaveURL("/account")`, với `baseURL` là `https://practicesoftwaretesting.com/`.
+
+(a) Giả sử sau khi login, app redirect sang `/account?tab=profile` (hoặc `/account/`). Assertion này pass hay fail? Nó so khớp **toàn bộ URL** hay chỉ phần path, và `baseURL` được ghép vào như thế nào?
+(b) Nếu muốn assertion chịu được query string nhưng vẫn chặt về path, bạn chọn hướng nào: regex, glob pattern, hay predicate function `(url: URL) => boolean`? Mỗi cách đánh đổi gì? (keyword tra docs: `toHaveURL` trên https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-url)
