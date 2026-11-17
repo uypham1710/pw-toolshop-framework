@@ -95,3 +95,72 @@ Trong test "Invalid password", bạn request cả `{ loginPage, page }`.
 (b) Ở `search.spec.ts`, test chỉ request `homePage`. Fixture `loginPage` có bị khởi tạo không? So sánh với `@pytest.fixture(autouse=True)`: Playwright fixture mặc định là lazy hay eager, và option nào làm nó giống `autouse`?
 (c) Nếu sau này `homePage` fixture cần teardown (ví dụ xoá giỏ hàng sau test), code teardown đặt ở đâu so với `await use(homePage)`, và nó có chạy khi test fail không?
 Docs: https://playwright.dev/docs/test-fixtures
+
+## Re-review 16:32
+
+**Phạm vi:** commit `1253011` (`HomePage.goto()` thêm bước chờ, `AccountPage` + fixture `accountPage`, `page` chuyển sang `private`, `home.smoke` dùng `homePage.goto()` + tag `@smoke`, chain locator `searchResults`, workflow chuyển sang `workflow_dispatch`, daily-log trả lời câu hỏi).
+
+### Kiểm tra tự động
+
+| Lệnh                                                 | Kết quả                      |
+| ---------------------------------------------------- | ---------------------------- |
+| `npx tsc --noEmit`                                   | ✅ 0 lỗi                     |
+| `npx eslint .`                                       | ✅ 0 lỗi                     |
+| `npx playwright test --reporter=list`                | ✅ 9/9 passed (6 workers)    |
+| `npx playwright test --repeat-each=10` (90 lần chạy) | ✅ **90/90 passed**, 0 flaky |
+
+### Trạng thái issue lần 1
+
+| Issue                                             | Trạng thái                                                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [High] Race `/products` vs `/products/search`     | ✅ Fixed: `HomePage.goto()` chờ product đầu tiên render rồi mới trả về. 90/90 xanh, kể cả `No result search` |
+| [Low] `Login success` fail 1 lần không rõ lý do   | ✅ Không tái hiện trong 90 lần. Hint `trace: "retain-on-failure"` vẫn chưa làm (xem bên dưới)                |
+| [Low] `loginPage.page` vs `{ page }`              | ✅ Fixed: `page` thành `private`, cả 2 test dùng fixture `page`. TS giờ cấm `loginPage.page`                 |
+| [Low] `pageTitle` sai nhà                         | ✅ Fixed: chuyển sang `AccountPage` + fixture `accountPage`                                                  |
+| [Low] `home.smoke` không dùng `goto()`, thiếu tag | ✅ Fixed: `homePage.goto()` trong `beforeEach`, tag ở cấp `describe`                                         |
+| [Low] `"search_completed"` lặp 2 lần              | ✅ Fixed: `searchResults` chain từ `searchResultsContainer`                                                  |
+| Carry-over                                        | ⚠️ Một phần (xem bên dưới)                                                                                   |
+
+### Issues còn lại
+
+**[Low] src/pages/HomePage.ts:26 + tests/ui/home.smoke.spec.ts:12-14 — bước chờ trong `goto()` làm test "at least one product card" gần như trùng lặp và đổi chỗ fail**
+— Vì sao: `goto()` giờ luôn chờ `productNames.first()` xuất hiện. Nếu trang chủ không load được product, test sẽ fail ở **`beforeEach`** với lỗi `locator.waitFor: Timeout`, chứ không fail ở assertion `not.toHaveCount(0)` với message dễ đọc. Đồng thời `has title` và `Sign in link exists` cũng fail theo, dù title/link vẫn ổn. Đây là trade-off khi đặt bước "sync" vào `goto()`: mọi caller đều phải trả giá.
+— Hint: không bắt buộc sửa, nhưng hãy cân nhắc 1 trong 2 hướng: (1) tách thành `goto()` thuần và một method/fixture "chờ sẵn sàng" mà chỉ search test dùng; hoặc (2) giữ nguyên, nhưng hiểu rằng test `should display at least one product card` giờ chủ yếu là "tài liệu sống". Ngoài ra, chờ DOM chỉ là **proxy** cho "response `/products` đã về". Cách chính xác hơn vẫn là `page.waitForResponse` đăng ký trước `goto` (học kỹ ở D16).
+
+**[Low] src/pages/AccountPage.ts:4,7 — field `page` được gán nhưng không bao giờ đọc**
+— Vì sao: `AccountPage` chưa có method nào dùng `this.page`, nên đây là dead field. `tsc` không báo vì `noUnusedLocals` chưa bật trong `tsconfig.json`. Trong khi đó URL `"/account"` lại hardcode trong `login.spec.ts:14`, nên kiến thức về trang Account nằm ở 2 nơi.
+— Hint: hoặc bỏ field (YAGNI), hoặc cho nó việc để làm, ví dụ để `AccountPage` "sở hữu" path `/account` giống cách `LoginPage.goto()` sở hữu `/auth/login`. Tra thêm `noUnusedLocals` / `noUnusedParameters` trong tsconfig nếu muốn compiler bắt dead code.
+
+**[Low] Carry-over (không lặp chi tiết)**
+
+- `src/pages/*.ts`: vẫn khai báo field rồi gán trong constructor, chưa dùng parameter property `constructor(private readonly page: Page)` (từ day06). Lưu ý khi đổi: `tsconfig` đang `target: "esnext"`, nên nếu khởi tạo locator bằng **field initializer** (`readonly x = this.page...`) thì hãy chạy `tsc` để kiểm tra thứ tự khởi tạo. Giữ phần gán locator trong thân constructor là an toàn nhất. Keyword: `useDefineForClassFields`.
+- `playwright.config.ts:30`: vẫn `trace: "on-first-retry"`, mà local `retries: 0` nên chạy local **không bao giờ có trace**. Hint `retain-on-failure` từ lần 1 chưa làm.
+- `package.json`: `scripts` vẫn rỗng.
+- `docs/daily-log.md`: các heading `# DayNN` (H1) đang nằm **dưới** `## YYYY-MM-DD` (H2), cấu trúc markdown bị ngược cấp. Dùng `### DayNN` sẽ đúng hơn. Mục Day07 cũng chưa ghi lại "finding" về race condition của app và cách bạn đã fix. Đây là bài học đáng giá nhất của hôm nay.
+
+### Làm tốt
+
+1. **Chọn `locator.waitFor()` thay vì `expect` trong POM**: đúng tinh thần "sync khác verify". `waitFor` nói rõ ý định "chờ trạng thái" chứ không phải "kiểm chứng". `.first()` ở đây cũng **có lý do**: `waitFor` cần locator resolve ra đúng 1 element (strict mode), khác với `.first()` thừa từng bị flag ở day05/06. Kết quả: 90/90 xanh.
+2. **Dùng type system để ép convention**: đổi `page` sang `private` khiến `loginPage.page` không còn compile được, và test tự nhiên chuyển sang fixture `page`. Thêm `AccountPage` chỉ tốn 1 class, 1 dòng type và 1 fixture, minh hoạ rõ lợi ích của D7.
+3. **Trả lời câu hỏi kiểm tra chính xác**: fixture test-scoped được cache (cùng 1 `page`), lazy mặc định và `{ auto: true }` ≈ `autouse=True`, teardown sau `await use()` chạy cả khi fail ≈ code sau `yield`. So sánh với pytest đúng chỗ.
+
+### Score
+
+| Tiêu chí                     | Điểm                                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------------------- |
+| Correctness (3)              | 3: suite ổn định, 90/90 với 6 workers                                                     |
+| Locator & waiting (3)        | 2.5: sync đúng chỗ, đúng API; trừ 0.5 vì chờ qua DOM proxy và áp cho mọi caller           |
+| Structure/POM (2)            | 1.5: fixture/POM sạch; trừ vì `AccountPage.page` là dead field, URL `/account` nằm ở test |
+| Readability & TS quality (2) | 1.5: naming tốt; còn carry-over parameter property, `scripts` rỗng, heading daily-log     |
+| **Tổng**                     | **8.5 / 10**                                                                              |
+
+**Kết luận: PASS** ✅. Không còn issue High, score ≥ 7. Issues: High 0 · Medium 0 · Low 3.
+
+### Câu hỏi kiểm tra hiểu bài
+
+`HomePage.goto()` giờ có `await this.productNames.first().waitFor()`.
+
+(a) `locator.waitFor()` mặc định chờ state nào? Nếu gọi `this.productNames.waitFor()` (bỏ `.first()`) khi trang có 9 product thì chuyện gì xảy ra, và vì sao?
+(b) Giả sử bạn chuyển sang chờ đúng response `/products` bằng `page.waitForResponse`. Vì sao viết `await page.goto("/"); await page.waitForResponse(...)` theo thứ tự đó là **sai/flaky**, và pattern đúng là gì? (keyword: tạo promise trước, `await` sau)
+(c) Nếu nhiều spec cần "home đã sẵn sàng", bạn có thể tạo fixture `readyHomePage` thay vì nhét bước chờ vào `goto()`. So sánh ngắn 2 cách: ai trả giá thời gian chờ, và lỗi hiện ra ở đâu khi product không load?
+Docs: https://playwright.dev/docs/api/class-locator#locator-wait-for · https://playwright.dev/docs/api/class-page#page-wait-for-response

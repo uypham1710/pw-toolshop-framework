@@ -154,7 +154,6 @@ Playwright cũng có thứ tương đương WebElement là `ElementHandle`, như
 Docs: https://playwright.dev/docs/locators · https://playwright.dev/docs/api/class-elementhandle
 
 # Day07
-
 **Học:**
 add page fixtures, refactor tests
 **Làm:**
@@ -184,3 +183,14 @@ Vì sao: Playwright fixture mặc định là lazy. Fixture chỉ được setup
 có chạy khi fail
 Vì sao chạy được khi fail: use() chỉ resolve khi test kết thúc, dù test pass, fail hay timeout. Sau đó Playwright luôn tiếp tục chạy phần code còn lại của fixture. 🐍 Cơ chế này giống hệt code sau yield trong pytest fixture.
 Docs: https://playwright.dev/docs/test-fixtures
+
+# Day08
+**Học:**
+config dotenv, baseurl, confidential
+**Làm:**
+config thêm file env.ts
+update lại test file sử dụng theo config mới
+khi thiếu biến trong .env thì show lỗi rõ ràng:
+Error: Missing required environment variable "BASE_URL". Copy .env.example to .env and fill in the value.
+**Blocker:**
+None

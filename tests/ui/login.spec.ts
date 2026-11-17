@@ -1,5 +1,6 @@
-import { testUser } from "../../src/data/users";
 import { test, expect } from "../../src/fixtures";
+import { config } from "../../src/config/env";
+import { unregisteredUser, invalidEmail } from "../../src/data/users";
 
 test.describe("Login tests", () => {
   test.beforeEach(async ({ loginPage }) => {
@@ -10,7 +11,7 @@ test.describe("Login tests", () => {
     "Login success",
     { tag: ["@smoke"] },
     async ({ loginPage, page, accountPage }) => {
-      await loginPage.login(testUser.email, testUser.password);
+      await loginPage.login(config.customer.email, config.customer.password);
       await expect(page).toHaveURL("/account");
       await expect(accountPage.pageTitle).toHaveText("My account");
     },
@@ -20,7 +21,7 @@ test.describe("Login tests", () => {
     "Invalid password",
     { tag: ["@regression"] },
     async ({ loginPage, page }) => {
-      await loginPage.login("test@example.com", "123456");
+      await loginPage.login(unregisteredUser.email, unregisteredUser.password);
       await expect(loginPage.loginError).toHaveText(
         /invalid email or password/i,
       );
@@ -29,7 +30,7 @@ test.describe("Login tests", () => {
   );
 
   test("Invalid email", { tag: ["@regression"] }, async ({ loginPage }) => {
-    await loginPage.login("abc.com", "");
+    await loginPage.login(invalidEmail.email, invalidEmail.password);
     await expect(loginPage.emailError).toHaveText(/email format is invalid/i);
   });
 
