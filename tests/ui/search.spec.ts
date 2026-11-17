@@ -1,13 +1,11 @@
-import { test, expect } from "@playwright/test";
-import { HomePage } from "../../src/pages/HomePage";
+import { test, expect } from "../../src/fixtures";
 
 test.describe("Search tests", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+  test.beforeEach(async ({ homePage }) => {
+    await homePage.goto();
   });
 
-  test("Search for a product", { tag: ["@smoke"] }, async ({ page }) => {
-    const homePage = new HomePage(page);
+  test("Search for a product", { tag: ["@smoke"] }, async ({ homePage }) => {
     const keyword = "hammer";
     const results = homePage.searchResults;
 
@@ -21,8 +19,7 @@ test.describe("Search tests", () => {
     });
   });
 
-  test("No result search", { tag: ["@regression"] }, async ({ page }) => {
-    const homePage = new HomePage(page);
+  test("No result search", { tag: ["@regression"] }, async ({ homePage }) => {
     const searchKey = "abc";
 
     await test.step("Search for product", async () => {

@@ -8,6 +8,7 @@ export class HomePage {
   readonly productNames: Locator;
   readonly searchCaption: Locator;
   readonly searchResultsContainer: Locator;
+  readonly signInLink: Locator;
   constructor(page: Page) {
     this.page = page;
     this.searchBox = page.getByRole("textbox", { name: /search/i });
@@ -18,6 +19,11 @@ export class HomePage {
     this.productNames = page.getByTestId("product-name");
     this.searchCaption = page.getByTestId("search-caption");
     this.searchResultsContainer = page.getByTestId("search_completed");
+    this.signInLink = page.getByRole("link", { name: "Sign in" });
+  }
+
+  async goto(): Promise<void> {
+    await this.page.goto("/");
   }
 
   async searchKeyword(keyword: string): Promise<void> {

@@ -33,13 +33,14 @@ Mục tiêu D6 đạt: 2 page object, locator `readonly`, action method `async`,
 
 **[Low] tests/ui/search.spec.ts:19 — `results.first().toBeVisible()` thừa**
 — Vì sao: dòng 20 `not.toHaveCount(0)` đã chứng minh có kết quả. Dòng 19 không thêm thông tin gì, còn thêm một `.first()` mà checklist khuyên tránh khi không cần.
-— Hint: giữ một trong hai. Nếu muốn chắc là kết quả *hiển thị* chứ không chỉ có trong DOM, giữ `toBeVisible` và bỏ dòng kia. Đừng giữ cả hai.
+— Hint: giữ một trong hai. Nếu muốn chắc là kết quả _hiển thị_ chứ không chỉ có trong DOM, giữ `toBeVisible` và bỏ dòng kia. Đừng giữ cả hai.
 
 **[Low] tests/ui/search.spec.ts:28-29, 35-42 — "No result search" chưa assert danh sách sản phẩm rỗng; precondition nằm ngoài step**
 — Vì sao: test chỉ kiểm tra thông báo "There are no products found." Nếu app vừa hiện thông báo vừa vẫn render list cũ (bug thật hay gặp với SPA), test vẫn pass. Bạn đã có sẵn `homePage.searchResults` để assert điều này.
 — Hint: thêm assertion số lượng kết quả bằng 0 vào step "Verify". Precondition ở dòng 29 có thể bỏ, vì `searchKeyword` → `fill` đã tự auto-wait textbox.
 
 **[Low] Carry-over từ day05 (không lặp chi tiết)**
+
 - `login.spec.ts:26`: "Invalid email" vẫn chưa có tag.
 - `login.spec.ts:23`: `not.toHaveURL("/account")` vẫn pass ngay lần check đầu.
 - `tests/ui/locators.spec.ts`: file bài tập D3 vẫn còn, test "Search for a product" trùng tên với `search.spec.ts`. Thêm nữa, `locators.spec.ts` và `home.smoke.spec.ts` chưa dùng POM, trong khi hôm nay là lúc tốt để chuyển chúng sang `HomePage`/`LoginPage`.
@@ -54,13 +55,13 @@ Mục tiêu D6 đạt: 2 page object, locator `readonly`, action method `async`,
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                         |
-| ---------------------------- | -------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 2.5: suite xanh, search assertion đã chặt; trừ 0.5 vì `LoginPage.goto()` sai URL (latent)    |
+| Tiêu chí                     | Điểm                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2.5: suite xanh, search assertion đã chặt; trừ 0.5 vì `LoginPage.goto()` sai URL (latent)     |
 | Locator & waiting (3)        | 3: locator ưu tiên role/label/testid, scoped locator thay cho wait; chỉ còn 1 `.first()` thừa |
 | Structure/POM (2)            | 1.5: POM mỏng và đúng hướng; trừ vì navigation + một số locator vẫn nằm trong test            |
 | Readability & TS quality (2) | 1.5: chưa dùng parameter property, naming lệch, các carry-over Low                            |
-| **Tổng**                     | **8.5 / 10**                                                                                 |
+| **Tổng**                     | **8.5 / 10**                                                                                  |
 
 **Kết luận: PASS** ✅. Score ≥ 7, không có issue High. Issues: High 0 · Medium 1 · Low 6.
 Sửa issue Medium (`goto`) trước D7, vì fixture `test.extend` sẽ rất hay gọi `goto()` của page object.
