@@ -77,3 +77,24 @@ Khi chạy: npx playwright test --grep "@smoke" sẽ chỉ chạy 2 test cases c
 **Blocker:**
 None
 **Câu hỏi reviewer**
+Giả sử để bỏ lặp locator, bạn viết trong `test.describe("Login tests")`:
+khai báo `let email: Locator;` ở cấp describe, rồi trong `beforeEach(async ({ page }) => ...)` gán `email = page.getByLabel(...)`.
+
+(a) Với `fullyParallel: true` và 6 workers, cách này có gây lỗi không? Gợi ý: mỗi worker là một **process riêng** hay một thread? File test được load bao nhiêu lần? Trong **cùng một worker**, các test chạy tuần tự hay song song?
+không gây lỗi
+Worker là một process riêng (Node.js child process), không phải thread. Các worker không dùng chung bộ nhớ.
+Mỗi worker tự load lại file test. Biến let email ở cấp describe vì vậy tồn tại thành 6 bản riêng, mỗi worker giữ một bản, và không worker nào nhìn thấy bản của worker khác.
+Trong cùng một worker, các test chạy tuần tự. Bạn trả lời đúng phần này. beforeEach gán lại email ngay trước mỗi test, nên không có hai test nào cùng đọc hay ghi biến đó một lúc.
+(b) Nếu đổi `beforeEach` thành `beforeAll`, bạn có dùng được fixture `page` không? Vì sao Playwright thiết kế như vậy (keyword: test-scoped vs worker-scoped fixture)?
+không dùng được page, vì page chỉ nằm trong test-scoped, còn before all là worker-scoped
+(c) Vậy vì sao vẫn khuyên **không** dùng pattern này, và D6/D7 thay nó bằng gì?
+Docs: https://playwright.dev/docs/test-parallel · https://playwright.dev/docs/test-fixtures
+Pattern này chạy được, nhưng không nên dùng vì 4 lý do:
+
+Correctness đang dựa vào một giả định ngầm. Nó chỉ đúng vì test trong cùng worker chạy tuần tự. Người đọc phải hiểu cơ chế worker mới biết code an toàn. Đây là shared mutable state, kiểu self.email = ... trong setUp của Python.
+TS không bảo vệ được bạn. let email: Locator; khai báo nhưng chưa gán. Khi biến được dùng bên trong một closure khác, TS strict không báo lỗi “used before assigned”. Nếu beforeEach quên gán hoặc gán nhầm, test chỉ nổ lúc runtime với lỗi undefined.
+Không tái sử dụng được giữa các file. File khác cũng cần locator email/password thì lại phải copy toàn bộ khối let + beforeEach.
+Khó đọc. Đọc một test, bạn không biết email đến từ đâu nếu không cuộn lên tìm hook.Thay bằng gì:
+
+D6, POM: class LoginPage với constructor(private readonly page: Page) và các Locator readonly. Locator được khai báo một lần, type an toàn, không bị gán lại.
+D7, custom fixture test.extend: fixture inject loginPage thẳng vào test qua async ({ loginPage }) => .... Mỗi test nhận một instance riêng, không có biến module-level, không cần beforeEach để gán.
