@@ -1,8 +1,8 @@
 import { test, expect } from "../../src/fixtures";
 
-test.describe("Home page smoke tests", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+test.describe("Home page smoke tests", { tag: ["@smoke"] }, () => {
+  test.beforeEach(async ({ homePage }) => {
+    await homePage.goto();
   });
 
   test("has title", async ({ page }) => {

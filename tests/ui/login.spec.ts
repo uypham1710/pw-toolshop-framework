@@ -6,11 +6,15 @@ test.describe("Login tests", () => {
     await loginPage.goto();
   });
 
-  test("Login success", { tag: ["@smoke"] }, async ({ loginPage }) => {
-    await loginPage.login(testUser.email, testUser.password);
-    await expect(loginPage.page).toHaveURL("/account");
-    await expect(loginPage.pageTitle).toHaveText("My account");
-  });
+  test(
+    "Login success",
+    { tag: ["@smoke"] },
+    async ({ loginPage, page, accountPage }) => {
+      await loginPage.login(testUser.email, testUser.password);
+      await expect(page).toHaveURL("/account");
+      await expect(accountPage.pageTitle).toHaveText("My account");
+    },
+  );
 
   test(
     "Invalid password",

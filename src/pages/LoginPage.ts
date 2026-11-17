@@ -1,14 +1,13 @@
 import { type Locator, type Page } from "@playwright/test";
 
 export class LoginPage {
-  readonly page: Page;
+  private readonly page: Page;
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
   readonly emailError: Locator;
   readonly passwordError: Locator;
   readonly loginError: Locator;
-  readonly pageTitle: Locator;
   constructor(page: Page) {
     this.page = page;
     this.emailInput = page.getByLabel(/email address/i);
@@ -17,7 +16,6 @@ export class LoginPage {
     this.emailError = page.getByTestId("email-error");
     this.passwordError = page.getByTestId("password-error");
     this.loginError = page.getByTestId("login-error");
-    this.pageTitle = page.getByTestId("page-title");
   }
 
   async goto(): Promise<void> {

@@ -2,6 +2,8 @@
 
 ## 2026-11-15
 
+# Day01
+
 **Học:**
 Setup và làm quen với Playwright core
 **Làm:**
@@ -18,6 +20,8 @@ trả lời: Khi chạy local và một test fail, không mở trace viewer. vì
 dùng command: npx playwright test --trace on
 
 ## 2026-11-16
+
+# Day02
 
 **Học:**
 Typescript basics
@@ -36,6 +40,8 @@ Không có await thì test function chạy tới cuối và kết thúc ngay, as
 (b) Trong repo này, công cụ nào sẽ bắt lỗi đó _trước khi_ chạy test, và rule tên gì?
 công cụ eslint, rule: @typescript-eslint/no-floating-promises
 
+# Day03
+
 **Học:**
 Locator
 **Làm:**
@@ -53,6 +59,8 @@ Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fi
 (b) Viết lại locator đó sao cho vẫn **không** phụ thuộc dấu `*` mà chỉ match đúng field "Email address". Chỉ cần mô tả hướng làm (regex hay option nào), không cần code đầy đủ.
 page.getByLabel(/^email address/i)
 
+# Day04
+
 **Học:**
 Web-first assertions + soft assertion
 **Làm:**
@@ -69,6 +77,8 @@ Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fi
 page.getByLabel(/^email address/i)
 
 ## 2026-11-17
+
+# Day05
 
 **Học:**
 describe, hooks, tags, test.step for login/search
@@ -99,6 +109,8 @@ Khó đọc. Đọc một test, bạn không biết email đến từ đâu nế
 
 D6, POM: class LoginPage với constructor(private readonly page: Page) và các Locator readonly. Locator được khai báo một lần, type an toàn, không bị gán lại.
 D7, custom fixture test.extend: fixture inject loginPage thẳng vào test qua async ({ loginPage }) => .... Mỗi test nhận một instance riêng, không có biến module-level, không cần beforeEach để gán.
+
+# Day06
 
 **Học:**
 POM, refactor test theo POM
@@ -141,7 +153,7 @@ Vì recipe không bao giờ "hết hạn", không cần gán lại. Đó là lý
 Playwright cũng có thứ tương đương WebElement là `ElementHandle`, nhưng docs khuyên không dùng (discouraged) vì nó trỏ tới một node cố định và có thể bị detached giống stale element. Nên dùng Locator thay thế.
 Docs: https://playwright.dev/docs/locators · https://playwright.dev/docs/api/class-elementhandle
 
-## Day07
+# Day07
 
 **Học:**
 add page fixtures, refactor tests
@@ -153,3 +165,22 @@ xóa file locators.spec.ts vì trước đó chỉ dùng để demo
 **Blocker:**
 None
 **Câu hỏi reviewer**
+Trong test "Invalid password", bạn request cả `{ loginPage, page }`.
+
+(a) `page` mà test nhận và `page` bên trong `loginPage` (được truyền vào ở `pages.fixture.ts:13`) là **cùng một object** hay hai tab khác nhau? Vì sao? (keyword: fixture được cache trong phạm vi một test, test-scoped)
+cùng 1 object
+Vì sao: fixture là test-scoped và được cache trong phạm vi một test. Khi chạy một test, Playwright dựng cây phụ thuộc:
+
+test cần { loginPage, page }
+└─ loginPage cần { page }
+
+page chỉ được tạo một lần, rồi cùng instance đó được đưa cho cả loginPage (qua ({ page }, use)) lẫn test. 🐍 Hành vi này giống pytest fixture scope="function": trong một test, mọi chỗ xin page đều nhận cùng một object. Sang test kế tiếp thì page mới được tạo lại.
+(b) Ở `search.spec.ts`, test chỉ request `homePage`. Fixture `loginPage` có bị khởi tạo không? So sánh với `@pytest.fixture(autouse=True)`: Playwright fixture mặc định là lazy hay eager, và option nào làm nó giống `autouse`?
+Fixture `loginPage` không bị khởi tạo
+Vì sao: Playwright fixture mặc định là lazy. Fixture chỉ được setup khi test, hook (beforeEach...) hoặc một fixture khác xin nó theo tên.
+Đó là option { auto: true }. Khi khai báo fixture dưới dạng tuple [hàmFixture, { auto: true }], fixture sẽ eager: tự chạy cho mọi test dù test không xin. Ứng dụng thường gặp là tự động log hoặc tự đính kèm thông tin debug cho mọi test.
+(c) Nếu sau này `homePage` fixture cần teardown (ví dụ xoá giỏ hàng sau test), code teardown đặt ở đâu so với `await use(homePage)`, và nó có chạy khi test fail không?
+đặt bên dưới `await use(homePage)`
+có chạy khi fail
+Vì sao chạy được khi fail: use() chỉ resolve khi test kết thúc, dù test pass, fail hay timeout. Sau đó Playwright luôn tiếp tục chạy phần code còn lại của fixture. 🐍 Cơ chế này giống hệt code sau yield trong pytest fixture.
+Docs: https://playwright.dev/docs/test-fixtures
