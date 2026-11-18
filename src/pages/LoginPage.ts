@@ -1,5 +1,6 @@
 import { type Locator, type Page } from "@playwright/test";
-import type { ErrorPosition } from "../data/login.data";
+
+export type ErrorPosition = "email" | "password" | "form";
 
 export class LoginPage {
   private readonly page: Page;

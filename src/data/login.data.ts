@@ -1,6 +1,5 @@
 import { uniqueEmail } from "./helpers";
-
-export type ErrorPosition = "email" | "password" | "form";
+import type { ErrorPosition } from "../pages/LoginPage";
 
 export interface LoginCase {
   title: string;

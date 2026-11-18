@@ -1,7 +1,4 @@
-import {
-  searchKeywords,
-  noResultSearchKeyword,
-} from "../../src/data/search.data";
+import { searchCases, noResultSearchKeyword } from "../../src/data/search.data";
 import { test, expect } from "../../src/fixtures";
 
 test.describe("Search tests", { tag: ["@search"] }, () => {
@@ -9,22 +6,27 @@ test.describe("Search tests", { tag: ["@search"] }, () => {
     await homePage.goto();
   });
 
-  for (const keyword of searchKeywords) {
-    test(`Search for ${keyword}`, { tag: ["@smoke"] }, async ({ homePage }) => {
-      const results = homePage.searchResults;
+  for (const { keyword, tags } of searchCases) {
+    // eslint-disable-next-line playwright/valid-test-tags -- tags come from typed test data (TestTag), validated by TS
+    test(
+      `Search for ${keyword}`,
+      { tag: tags ?? ["@regression"] },
+      async ({ homePage }) => {
+        const results = homePage.searchResults;
 
-      await test.step("Search for product", async () => {
-        await homePage.searchKeyword(keyword);
-      });
+        await test.step("Search for product", async () => {
+          await homePage.searchKeyword(keyword);
+        });
 
-      await test.step("Verify search results", async () => {
-        await expect(homePage.searchCaption).toHaveText(
-          `Searched for: ${keyword}`,
-        );
-        await expect(results).not.toHaveCount(0);
-        await expect(results.filter({ hasNotText: keyword })).toHaveCount(0);
-      });
-    });
+        await test.step("Verify search results", async () => {
+          await expect(homePage.searchCaption).toHaveText(
+            `Searched for: ${keyword}`,
+          );
+          await expect(results).not.toHaveCount(0);
+          await expect(results.filter({ hasNotText: keyword })).toHaveCount(0);
+        });
+      },
+    );
   }
 
   test("No result search", { tag: ["@regression"] }, async ({ homePage }) => {

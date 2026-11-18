@@ -2,7 +2,7 @@
 
 ## 2026-11-15
 
-# Day01
+### Day01
 
 **Học:**
 Setup và làm quen với Playwright core
@@ -21,7 +21,7 @@ dùng command: npx playwright test --trace on
 
 ## 2026-11-16
 
-# Day02
+### Day02
 
 **Học:**
 Typescript basics
@@ -40,7 +40,7 @@ Không có await thì test function chạy tới cuối và kết thúc ngay, as
 (b) Trong repo này, công cụ nào sẽ bắt lỗi đó _trước khi_ chạy test, và rule tên gì?
 công cụ eslint, rule: @typescript-eslint/no-floating-promises
 
-# Day03
+### Day03
 
 **Học:**
 Locator
@@ -59,7 +59,7 @@ Nếu Playwright tự lấy element đầu tiên như Selenium, nó có thể fi
 (b) Viết lại locator đó sao cho vẫn **không** phụ thuộc dấu `*` mà chỉ match đúng field "Email address". Chỉ cần mô tả hướng làm (regex hay option nào), không cần code đầy đủ.
 page.getByLabel(/^email address/i)
 
-# Day04
+### Day04
 
 **Học:**
 Web-first assertions + soft assertion
@@ -78,7 +78,7 @@ page.getByLabel(/^email address/i)
 
 ## 2026-11-17
 
-# Day05
+### Day05
 
 **Học:**
 describe, hooks, tags, test.step for login/search
@@ -110,7 +110,7 @@ Khó đọc. Đọc một test, bạn không biết email đến từ đâu nế
 D6, POM: class LoginPage với constructor(private readonly page: Page) và các Locator readonly. Locator được khai báo một lần, type an toàn, không bị gán lại.
 D7, custom fixture test.extend: fixture inject loginPage thẳng vào test qua async ({ loginPage }) => .... Mỗi test nhận một instance riêng, không có biến module-level, không cần beforeEach để gán.
 
-# Day06
+### Day06
 
 **Học:**
 POM, refactor test theo POM
@@ -153,7 +153,7 @@ Vì recipe không bao giờ "hết hạn", không cần gán lại. Đó là lý
 Playwright cũng có thứ tương đương WebElement là `ElementHandle`, nhưng docs khuyên không dùng (discouraged) vì nó trỏ tới một node cố định và có thể bị detached giống stale element. Nên dùng Locator thay thế.
 Docs: https://playwright.dev/docs/locators · https://playwright.dev/docs/api/class-elementhandle
 
-# Day07
+### Day07
 
 **Học:**
 add page fixtures, refactor tests
@@ -185,7 +185,7 @@ có chạy khi fail
 Vì sao chạy được khi fail: use() chỉ resolve khi test kết thúc, dù test pass, fail hay timeout. Sau đó Playwright luôn tiếp tục chạy phần code còn lại của fixture. 🐍 Cơ chế này giống hệt code sau yield trong pytest fixture.
 Docs: https://playwright.dev/docs/test-fixtures
 
-# Day08
+### Day08
 
 **Học:**
 config dotenv, baseurl, confidential
@@ -198,14 +198,14 @@ Error: Missing required environment variable "BASE_URL". Copy .env.example to .e
 None
 **Câu hỏi reviewer**
 (a) Khi chạy 6 workers, `env.ts` (và `dotenv/config`) được evaluate **bao nhiêu lần**, và vì sao? So với Python: một module-level `settings = Settings()` được import trong 6 process `pytest-xdist` thì sao? Gợi ý: nhìn số dòng `◇ injected env` trong output.
-1 lần
+7 lần
 (b) `AppConfig` khai báo `readonly baseUrl`. Nếu ở đâu đó viết `(config as any).baseUrl = "x"`, thì runtime có chặn không? `readonly` của TS bảo vệ ở **compile-time** hay **runtime**? Muốn chặn ở runtime thì dùng gì? (keyword: `Object.freeze`, `as const`)
 tôi nghĩ là bảo vệ ở complile-time,
 (c) Với `baseURL` hiện tại, `page.goto("/auth/login")` và `page.goto("auth/login")` khác nhau thế nào nếu sau này `BASE_URL` có path, ví dụ `https://example.com/toolshop/`? (keyword: URL resolution, `new URL(relative, base)`)
 
 ## 2026-11-18
 
-# Day09
+### Day09
 
 **Học:**
 Test data: factory/builder và data-driven test
@@ -216,5 +216,21 @@ Data-driven test cho login nevagtive và search
 vì sao filter + toHaveCount(0) ổn định hơn allTextContents() + loop?
 Web-first assertion retry trên Locator nên tự chờ trang cập nhật (ổn định); allTextContents() chụp một lần nên phụ thuộc timing (flaky). Nhưng retry có thể pass sớm trên trạng thái cũ/rỗng, nên cần assert một “anchor” (caption) trước để đảm bảo đang kiểm tra đúng kết quả.
 hasNotText không phân biệt hoa thường
+**Blocker:**
+None
+**Câu hỏi reviewer**
+Giả sử bạn đổi title thành `` `login fail: ${loginCase.title} (${loginCase.email})` ``. Case "Invalid email or password" dùng `uniqueEmail()` ở module scope.
+
+(a) Chạy `npx playwright test --list` rồi chạy thật với 6 workers thì chuyện gì xảy ra, và **vì sao**? (Gợi ý: main process collect test theo title, sau đó worker **import lại** file spec.)
+(b) Từ đó rút ra quy tắc: giá trị random nên được sinh ở đâu (module scope, trong `test()`, hay trong fixture)?
+(c) So với Python: `pytest-xdist` báo lỗi gì khi `parametrize` sinh id khác nhau giữa các worker?
+
+###Day10
+**Học:**
+refactor POM + add search/product tests
+**Làm:**
+Fix các review medium/low trước đó
+Thêm các test mới
+Rà lại test ko còn import test và expect từ playwright
 **Blocker:**
 None
