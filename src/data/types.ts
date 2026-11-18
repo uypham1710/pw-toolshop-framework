@@ -8,3 +8,19 @@ export interface Product {
   inStock: boolean;
   category: Category;
 }
+
+export interface RegisterForm {
+  firstName: string;
+  lastName: string;
+  /** Format: YYYY-MM-DD */
+  dateOfBirth: string;
+  country: string;
+  postalCode: string;
+  houseNumber: string;
+  street: string;
+  city: string;
+  state: string;
+  phone: string;
+  emailAddress: string;
+  password: string;
+}

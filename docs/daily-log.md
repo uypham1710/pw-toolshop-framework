@@ -154,6 +154,7 @@ Playwright cũng có thứ tương đương WebElement là `ElementHandle`, như
 Docs: https://playwright.dev/docs/locators · https://playwright.dev/docs/api/class-elementhandle
 
 # Day07
+
 **Học:**
 add page fixtures, refactor tests
 **Làm:**
@@ -185,6 +186,7 @@ Vì sao chạy được khi fail: use() chỉ resolve khi test kết thúc, dù 
 Docs: https://playwright.dev/docs/test-fixtures
 
 # Day08
+
 **Học:**
 config dotenv, baseurl, confidential
 **Làm:**
@@ -192,5 +194,27 @@ config thêm file env.ts
 update lại test file sử dụng theo config mới
 khi thiếu biến trong .env thì show lỗi rõ ràng:
 Error: Missing required environment variable "BASE_URL". Copy .env.example to .env and fill in the value.
+**Blocker:**
+None
+**Câu hỏi reviewer**
+(a) Khi chạy 6 workers, `env.ts` (và `dotenv/config`) được evaluate **bao nhiêu lần**, và vì sao? So với Python: một module-level `settings = Settings()` được import trong 6 process `pytest-xdist` thì sao? Gợi ý: nhìn số dòng `◇ injected env` trong output.
+1 lần
+(b) `AppConfig` khai báo `readonly baseUrl`. Nếu ở đâu đó viết `(config as any).baseUrl = "x"`, thì runtime có chặn không? `readonly` của TS bảo vệ ở **compile-time** hay **runtime**? Muốn chặn ở runtime thì dùng gì? (keyword: `Object.freeze`, `as const`)
+tôi nghĩ là bảo vệ ở complile-time,
+(c) Với `baseURL` hiện tại, `page.goto("/auth/login")` và `page.goto("auth/login")` khác nhau thế nào nếu sau này `BASE_URL` có path, ví dụ `https://example.com/toolshop/`? (keyword: URL resolution, `new URL(relative, base)`)
+
+## 2026-11-18
+
+# Day09
+
+**Học:**
+Test data: factory/builder và data-driven test
+**Làm:**
+Đưa test data vào data/
+Viết user factory để sinh data hợp lệ
+Data-driven test cho login nevagtive và search
+vì sao filter + toHaveCount(0) ổn định hơn allTextContents() + loop?
+Web-first assertion retry trên Locator nên tự chờ trang cập nhật (ổn định); allTextContents() chụp một lần nên phụ thuộc timing (flaky). Nhưng retry có thể pass sớm trên trạng thái cũ/rỗng, nên cần assert một “anchor” (caption) trước để đảm bảo đang kiểm tra đúng kết quả.
+hasNotText không phân biệt hoa thường
 **Blocker:**
 None

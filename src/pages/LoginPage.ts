@@ -1,4 +1,5 @@
 import { type Locator, type Page } from "@playwright/test";
+import type { ErrorPosition } from "../data/login.data";
 
 export class LoginPage {
   private readonly page: Page;
@@ -26,5 +27,14 @@ export class LoginPage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.loginButton.click();
+  }
+
+  errorFor(position: ErrorPosition): Locator {
+    const errors: Record<ErrorPosition, Locator> = {
+      email: this.emailError,
+      password: this.passwordError,
+      form: this.loginError,
+    };
+    return errors[position];
   }
 }
