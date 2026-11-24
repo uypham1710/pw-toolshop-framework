@@ -1,7 +1,7 @@
 import "dotenv/config";
 import path from "path";
 
-export const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
 export const AUTH_FILE = path.join(PROJECT_ROOT, "playwright", ".auth", "user.json");
 
@@ -20,6 +20,7 @@ export interface AppConfig {
   readonly customer: {
     readonly email: string;
     readonly password: string;
+    readonly name: string;
   };
   readonly baseUrl: string;
   readonly apiUrl: string;
@@ -29,6 +30,7 @@ export const config: AppConfig = {
   customer: {
     email: requireEnv("CUSTOMER_EMAIL"),
     password: requireEnv("CUSTOMER_PASSWORD"),
+    name: requireEnv("CUSTOMER_NAME"),
   },
   baseUrl: requireEnv("BASE_URL"),
   apiUrl: requireEnv("API_URL"),

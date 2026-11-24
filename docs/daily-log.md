@@ -234,3 +234,15 @@ Thêm các test mới
 Rà lại test ko còn import test và expect từ playwright
 **Blocker:**
 None
+
+###Day11
+## 2026-11-24
+**Học:**
+storageState + setup project
+**Làm:**
+tạo file auth.setup, config trong playwright.congfig, file  auth.setup sẽ chạy đầu tiên mỗi lần chạy test, login và save storageState vào 1 file.
+Đã chuyển project từ ESM về CJS.
+Lý do: để khớp với docs Playwright, vốn dùng __dirname.
+Đã kiểm tra tsc, eslint, test sau khi đổi, đều pass.
+**Blocker:**
+None

@@ -1,6 +1,5 @@
 import { test as setup, expect } from "../src/fixtures";
-import { config } from "../src/config/env";
-import { AUTH_FILE } from "../src/config/env";
+import { config, AUTH_FILE } from "../src/config/env";
 
 setup('Authentication setup', async ({ accountPage, loginPage, page }) => {
   await loginPage.goto();

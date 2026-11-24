@@ -3,6 +3,8 @@ import { productNames } from "../../src/data/product.data";
 import { escapeRegExp } from "../../src/utils/regex";
 
 test.describe("Product detail page smoke tests", { tag: ["@smoke"] }, () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test.beforeEach(async ({ homePage }) => {
     await homePage.goto();
   });
@@ -33,9 +35,14 @@ test.describe("Product detail page smoke tests", { tag: ["@smoke"] }, () => {
     "Add product to cart",
     { tag: ["@regression"] },
     async ({ homePage, productPage }) => {
-      const name = productNames.combinationPliers;
       const quantity = 2;
-      await homePage.openProduct(name);
+      const card = homePage.inStockProductCards.first();
+      await expect(
+        card,
+        "Precondition: home page must list at least one in-stock product",
+      ).toBeVisible();
+      const name = (await homePage.productNameIn(card).innerText()).trim();
+      await card.click();
       await expect(productPage.productName).toHaveText(name);
 
       await productPage.setQuantity(quantity);

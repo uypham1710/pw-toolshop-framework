@@ -13,6 +13,7 @@ export class HomePage {
   readonly productCards: Locator;
   readonly nextPageButton: Locator;
   readonly firstProductName: Locator;
+  readonly inStockProductCards: Locator;
   constructor(page: Page) {
     this.page = page;
     this.searchBox = page.getByRole("textbox", { name: /search/i });
@@ -26,6 +27,9 @@ export class HomePage {
     this.productCards = page
       .getByRole("link")
       .filter({ has: this.productNames });
+    this.inStockProductCards = this.productCards.filter({
+      hasNotText: "Out of stock",
+    });
     this.nextPageButton = page.getByRole("button", { name: "Next" });
     this.firstProductName = this.productNameIn(this.productCards.first());
   }

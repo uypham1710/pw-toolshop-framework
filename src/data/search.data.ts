@@ -11,4 +11,4 @@ export const searchCases: readonly SearchCase[] = [
   { keyword: "spanner" },
 ];
 
-export const noResultSearchKeyword = "abc@#";
+export const noResultSearchKeyword = "#@$!$!";

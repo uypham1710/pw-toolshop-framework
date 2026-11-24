@@ -1,4 +1,5 @@
 import { test, expect } from "../../src/fixtures";
+import { config } from "../../src/config/env";
 
 test.describe("Login tests", () => {
   test.beforeEach(async ({ accountPage }) => {
@@ -18,10 +19,9 @@ test.describe("Login tests", () => {
     "Username displayed correctly",
     { tag: ["@smoke"] },
     async ({ accountPage, loginPage }) => {
-      const username = "Bob Smith";
       await expect(loginPage.emailInput).toBeHidden();
       await expect(accountPage.pageTitle).toHaveText("My account");
-      await expect(accountPage.username).toHaveText(username);
+      await expect(accountPage.userMenu).toHaveText(config.customer.name);
 
     },
   );
