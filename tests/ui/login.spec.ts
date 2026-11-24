@@ -1,18 +1,29 @@
 import { test, expect } from "../../src/fixtures";
-import { config } from "../../src/config/env";
 
 test.describe("Login tests", () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.goto();
+  test.beforeEach(async ({ accountPage }) => {
+    await accountPage.goto();
   });
 
   test(
     "Login success",
     { tag: ["@smoke"] },
-    async ({ loginPage, page, accountPage }) => {
-      await loginPage.login(config.customer.email, config.customer.password);
+    async ({ page, accountPage }) => {
       await expect(page).toHaveURL("/account");
       await expect(accountPage.pageTitle).toHaveText("My account");
     },
   );
+
+  test(
+    "Username displayed correctly",
+    { tag: ["@smoke"] },
+    async ({ accountPage, loginPage }) => {
+      const username = "Bob Smith";
+      await expect(loginPage.emailInput).toBeHidden();
+      await expect(accountPage.pageTitle).toHaveText("My account");
+      await expect(accountPage.username).toHaveText(username);
+
+    },
+  );
+
 });

@@ -1,4 +1,9 @@
 import "dotenv/config";
+import path from "path";
+
+export const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+
+export const AUTH_FILE = path.join(PROJECT_ROOT, "playwright", ".auth", "user.json");
 
 export function requireEnv(name: string): string {
   const value = process.env[name];

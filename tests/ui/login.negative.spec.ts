@@ -1,6 +1,8 @@
 import { loginCases } from "../../src/data/login.data";
 import { test, expect } from "../../src/fixtures";
 
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe("Login Negative Cases", { tag: ["@negative"] }, () => {
   test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
