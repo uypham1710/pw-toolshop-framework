@@ -236,13 +236,31 @@ Rà lại test ko còn import test và expect từ playwright
 None
 
 ###Day11
+
 ## 2026-11-24
+
 **Học:**
 storageState + setup project
 **Làm:**
-tạo file auth.setup, config trong playwright.congfig, file  auth.setup sẽ chạy đầu tiên mỗi lần chạy test, login và save storageState vào 1 file.
+tạo file auth.setup, config trong playwright.congfig, file auth.setup sẽ chạy đầu tiên mỗi lần chạy test, login và save storageState vào 1 file.
 Đã chuyển project từ ESM về CJS.
 Lý do: để khớp với docs Playwright, vốn dùng __dirname.
 Đã kiểm tra tsc, eslint, test sau khi đổi, đều pass.
+**Blocker:**
+None
+
+## Câu hỏi kiểm tra hiểu bài
+
+Toolshop lưu token login ở đâu (cookie hay `localStorage`)? Từ đó giải thích: vì sao `storageState` vẫn dùng được, và nếu bạn có 4 workers cùng chạy test **thay đổi giỏ hàng** với cùng `user.json`, chuyện gì có thể xảy ra — bạn sẽ đổi setup thế nào để mỗi worker có account riêng?
+token lưu ở localStorage
+
+###Day12
+## 2026-11-26
+**Học:**
+request fixture / APIRequestContext với Toolshop API
+**Làm:**
+Thêm project API mới trong playwright config
+Thêm test case api
+Làm quen với request fixture
 **Blocker:**
 None

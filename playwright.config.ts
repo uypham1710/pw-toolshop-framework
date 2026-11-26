@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { AUTH_FILE, config as envConfig } from "./src/config/env";
+import { AUTH_FILE, config, config as envConfig } from "./src/config/env";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -27,15 +27,27 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: "setup", testMatch: /.*\.setup\.ts/ },
 
     {
       name: "chromium",
+      testIgnore: "**/api/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         storageState: AUTH_FILE,
       },
-      dependencies: ['setup'],
+      dependencies: ["setup"],
+    },
+
+    {
+      name: "api",
+      testMatch: "**/api/**/*.spec.ts",
+      use: {
+        baseURL: config.apiUrl,
+        extraHTTPHeaders: {
+          Accept: "application/json",
+        },
+      },
     },
 
     // {

@@ -6,14 +6,10 @@ test.describe("Login tests", () => {
     await accountPage.goto();
   });
 
-  test(
-    "Login success",
-    { tag: ["@smoke"] },
-    async ({ page, accountPage }) => {
-      await expect(page).toHaveURL("/account");
-      await expect(accountPage.pageTitle).toHaveText("My account");
-    },
-  );
+  test("Login success", { tag: ["@smoke"] }, async ({ page, accountPage }) => {
+    await expect(page).toHaveURL("/account");
+    await expect(accountPage.pageTitle).toHaveText("My account");
+  });
 
   test(
     "Username displayed correctly",
@@ -22,8 +18,6 @@ test.describe("Login tests", () => {
       await expect(loginPage.emailInput).toBeHidden();
       await expect(accountPage.pageTitle).toHaveText("My account");
       await expect(accountPage.userMenu).toHaveText(config.customer.name);
-
     },
   );
-
 });

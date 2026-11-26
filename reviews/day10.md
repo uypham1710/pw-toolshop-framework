@@ -15,11 +15,11 @@ Không có lệnh nào fail, nên không có issue High từ phần này.
 
 Kiểm tra thêm về tag (`--list`):
 
-| Lệnh                                        | Số test    |
-| ------------------------------------------- | ---------- |
-| `--grep @smoke`                             | 8 / 15     |
-| `--grep @regression`                        | 5 / 15     |
-| `--grep @smoke --grep-invert @regression`   | 6, tức là **2 test mang cả 2 tag** |
+| Lệnh                                      | Số test                            |
+| ----------------------------------------- | ---------------------------------- |
+| `--grep @smoke`                           | 8 / 15                             |
+| `--grep @regression`                      | 5 / 15                             |
+| `--grep @smoke --grep-invert @regression` | 6, tức là **2 test mang cả 2 tag** |
 
 ## Đã sửa từ review day09 ✅
 
@@ -34,7 +34,7 @@ Kiểm tra thêm về tag (`--list`):
 ### Medium
 
 - **[Medium] `tests/ui/home.spec.ts:3` + `tests/ui/product.detail.spec.ts:5`: tag ở `describe` được **cộng dồn** xuống test, nên `@smoke` bị trùng và tag phân loại bị sai.**
-  Vì sao: output hiện `Home page shows product grid @smoke @smoke`, `Pagination goes to next page @smoke @regression`, `Add product to cart @smoke @regression`. Tag của test không *thay thế* tag của describe mà được nối thêm vào. Kết quả là `npm run test:smoke` chạy 8/15 test, kể cả 2 test bạn định để là regression. Script `test:smoke` vừa thêm hôm nay vì vậy không còn đúng nghĩa "bộ test nhanh, quan trọng nhất". Tên describe `"Home page smoke tests"` / `"Product detail page smoke tests"` cũng sai với nội dung bên trong.
+  Vì sao: output hiện `Home page shows product grid @smoke @smoke`, `Pagination goes to next page @smoke @regression`, `Add product to cart @smoke @regression`. Tag của test không _thay thế_ tag của describe mà được nối thêm vào. Kết quả là `npm run test:smoke` chạy 8/15 test, kể cả 2 test bạn định để là regression. Script `test:smoke` vừa thêm hôm nay vì vậy không còn đúng nghĩa "bộ test nhanh, quan trọng nhất". Tên describe `"Home page smoke tests"` / `"Product detail page smoke tests"` cũng sai với nội dung bên trong.
   Hint: chọn **một** chỗ gắn tag. Hoặc gắn ở describe (khi cả nhóm cùng loại), hoặc gắn ở từng test, đừng dùng cả hai. Tự kiểm bằng `npx playwright test --list --grep @smoke`. Docs: https://playwright.dev/docs/test-annotations#tag-tests
 
 - **[Medium] Roadmap "Search/**Filter**" chưa có, và tổng số test không tăng (15 → 15).**
@@ -46,8 +46,8 @@ Kiểm tra thêm về tag (`--list`):
   - `src/data/users.ts`: từ hôm nay không còn file nào import (sau khi xoá 3 login test).
   - `src/data/products.ts`: không ai import.
   - `ProductPage.getCartQuantity()` (`src/pages/ProductPage.ts:31`) và `cartConfirmationMessage` (`:16`): không dùng. Test đã assert bằng `toHaveText(String(quantity))`, tức là đúng hướng.
-  Vì sao: người đọc (hay chính bạn ở D20) sẽ không biết file nào còn sống. `getCartQuantity()` kiểu "đọc text → parse → trả về số" là **thói quen Selenium** (`int(element.text)` rồi `assert ==`). Để nó nằm sẵn trong POM là mời người sau dùng nó thay vì web-first assertion.
-  Hint: xoá hẳn, hoặc ghi rõ trong daily-log "để dành cho D?? (register qua API)". Keyword để tự tìm unused export: `ts-prune` / `knip`.
+    Vì sao: người đọc (hay chính bạn ở D20) sẽ không biết file nào còn sống. `getCartQuantity()` kiểu "đọc text → parse → trả về số" là **thói quen Selenium** (`int(element.text)` rồi `assert ==`). Để nó nằm sẵn trong POM là mời người sau dùng nó thay vì web-first assertion.
+    Hint: xoá hẳn, hoặc ghi rõ trong daily-log "để dành cho D?? (register qua API)". Keyword để tự tìm unused export: `ts-prune` / `knip`.
 
 ### Low
 
@@ -89,13 +89,13 @@ Kiểm tra thêm về tag (`--list`):
 
 ## Score
 
-| Tiêu chí                     | Điểm                                                                                                |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| Correctness (3)              | 2.5: 15/15 xanh; trừ vì tag sai làm `test:smoke` chạy cả regression, và thiếu Filter so với roadmap |
-| Locator & waiting (3)        | 2.5: locator scoped theo card tốt, không có wait thừa; trừ vì regex tự build thay `exact`, hardcode 9 |
+| Tiêu chí                     | Điểm                                                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Correctness (3)              | 2.5: 15/15 xanh; trừ vì tag sai làm `test:smoke` chạy cả regression, và thiếu Filter so với roadmap      |
+| Locator & waiting (3)        | 2.5: locator scoped theo card tốt, không có wait thừa; trừ vì regex tự build thay `exact`, hardcode 9    |
 | Structure/POM (2)            | 1.5: POM gọn, fixture mới đúng pattern; trừ vì getter đọc text kiểu Selenium còn sót và mất 1 case login |
-| Readability & TS quality (2) | 1: dead code ở 3 file data + 2 member ProductPage, trùng tên `productNames`, describe name sai     |
-| **Tổng**                     | **7.5 / 10**                                                                                        |
+| Readability & TS quality (2) | 1: dead code ở 3 file data + 2 member ProductPage, trùng tên `productNames`, describe name sai           |
+| **Tổng**                     | **7.5 / 10**                                                                                             |
 
 **Kết luận: PASS** ✅. Không có issue High, score ≥ 7. Issues: High 0 · Medium 3 · Low 8.
 Nên sửa issue tag trước D11. Từ D11 bạn sẽ thêm setup project và `--grep` theo tag, nên tag sai thì CI chạy sai bộ test.
