@@ -255,12 +255,28 @@ Toolshop lưu token login ở đâu (cookie hay `localStorage`)? Từ đó giả
 token lưu ở localStorage
 
 ###Day12
+
 ## 2026-11-26
+
 **Học:**
 request fixture / APIRequestContext với Toolshop API
 **Làm:**
 Thêm project API mới trong playwright config
 Thêm test case api
 Làm quen với request fixture
+**Blocker:**
+None
+
+###Day13
+
+## 2026-11-27
+**Học:**
+API client layer có types
+**Làm:**
+Thêm types cho api
+tạo client
+thêm helper http
+tạo api fixture
+sửa lại test dùng client
 **Blocker:**
 None
