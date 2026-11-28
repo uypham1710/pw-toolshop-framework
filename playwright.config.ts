@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { AUTH_FILE, config, config as envConfig } from "./src/config/env";
+import { AUTH_FILE, config } from "./src/config/env";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -18,7 +18,7 @@ export default defineConfig({
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: envConfig.baseUrl,
+    baseURL: config.baseUrl,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -42,12 +42,6 @@ export default defineConfig({
     {
       name: "api",
       testMatch: "**/api/**/*.spec.ts",
-      use: {
-        baseURL: config.apiUrl,
-        extraHTTPHeaders: {
-          Accept: "application/json",
-        },
-      },
     },
 
     // {

@@ -225,7 +225,7 @@ Giả sử bạn đổi title thành `` `login fail: ${loginCase.title} (${login
 (b) Từ đó rút ra quy tắc: giá trị random nên được sinh ở đâu (module scope, trong `test()`, hay trong fixture)?
 (c) So với Python: `pytest-xdist` báo lỗi gì khi `parametrize` sinh id khác nhau giữa các worker?
 
-###Day10
+### Day10
 **Học:**
 refactor POM + add search/product tests
 **Làm:**
@@ -235,7 +235,7 @@ Rà lại test ko còn import test và expect từ playwright
 **Blocker:**
 None
 
-###Day11
+### Day11
 
 ## 2026-11-24
 
@@ -254,7 +254,7 @@ None
 Toolshop lưu token login ở đâu (cookie hay `localStorage`)? Từ đó giải thích: vì sao `storageState` vẫn dùng được, và nếu bạn có 4 workers cùng chạy test **thay đổi giỏ hàng** với cùng `user.json`, chuyện gì có thể xảy ra — bạn sẽ đổi setup thế nào để mỗi worker có account riêng?
 token lưu ở localStorage
 
-###Day12
+### Day12
 
 ## 2026-11-26
 
@@ -267,7 +267,7 @@ Làm quen với request fixture
 **Blocker:**
 None
 
-###Day13
+### Day13
 
 ## 2026-11-27
 **Học:**

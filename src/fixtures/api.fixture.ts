@@ -16,23 +16,23 @@ export const test = base.extend<ApiFixtures>({
   apiContext: async ({ playwright }, use) => {
     const apiContext = await playwright.request.newContext({
       baseURL: config.apiUrl,
+      extraHTTPHeaders: {
+        Accept: "application/json",
+      },
     });
     await use(apiContext);
     await apiContext.dispose();
   },
 
   productsClient: async ({ apiContext }, use) => {
-    const productsClient = new ProductsClient(apiContext);
-    await use(productsClient);
+    await use(new ProductsClient(apiContext));
   },
 
   categoriesClient: async ({ apiContext }, use) => {
-    const categoriesClient = new CategoriesClient(apiContext);
-    await use(categoriesClient);
+    await use(new CategoriesClient(apiContext));
   },
 
   authClient: async ({ apiContext }, use) => {
-    const authClient = new AuthClient(apiContext);
-    await use(authClient);
+    await use(new AuthClient(apiContext));
   },
 });
