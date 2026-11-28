@@ -280,3 +280,14 @@ tạo api fixture
 sửa lại test dùng client
 **Blocker:**
 None
+
+## 2026-11-28
+### Day14
+**Học:**
+Hybrid test: API tạo data → UI verify → API cleanup
+**Làm:**
+Tạo fixture newUser dùng để register user qua API
+tạo hybrid test, sử dụng fixture để tạo user, dùng email/password mới để login và verify UI
+fixture có teardown delete user sau khi chạy (dù test fail hay pass)
+**Blocker:**
+None

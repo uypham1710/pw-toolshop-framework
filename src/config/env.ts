@@ -27,6 +27,10 @@ export interface AppConfig {
     readonly password: string;
     readonly name: string;
   };
+  readonly admin: {
+    readonly email: string;
+    readonly password: string;
+  };
   readonly baseUrl: string;
   readonly apiUrl: string;
 }
@@ -37,6 +41,11 @@ export const config: AppConfig = {
     password: requireEnv("CUSTOMER_PASSWORD"),
     name: requireEnv("CUSTOMER_NAME"),
   },
+  admin: {
+    email: requireEnv("ADMIN_EMAIL"),
+    password: requireEnv("ADMIN_PASSWORD"),
+  },
   baseUrl: requireEnv("BASE_URL"),
   apiUrl: requireEnv("API_URL"),
 };
+  

@@ -72,3 +72,77 @@
 ## Câu hỏi kiểm tra hiểu bài
 
 Trong `parseJson<T>`, nếu Toolshop trả về `{"id": 1, "name": null}` cho endpoint mà interface `Product` khai báo `id: string; name: string`, thì `npx tsc --noEmit` có báo lỗi không, và test có fail không? Giải thích vì sao — và từ đó, TypeScript type khác gì so với runtime validation?
+
+---
+
+## Re-review 12:23 (2026-11-28)
+
+**Phạm vi:** commit `0e746ed day13: Update test script based on review` — `playwright.config.ts`, `src/fixtures/api.fixture.ts`, `tests/api/products.api.spec.ts`, `docs/daily-log.md`.
+
+### Kiểm tra tự động
+
+| Lệnh | Kết quả |
+|---|---|
+| `npx tsc --noEmit` | ✅ pass |
+| `npx eslint .` | ✅ pass |
+| `npx playwright test --reporter=list` | ✅ **21/21 passed** (11.8s, 6 workers) |
+| `npx prettier --check src tests` (thêm) | ⚠️ 4 file: `api.fixture.ts`, `fixtures/index.ts`, `utils/assert.ts`, `products.api.spec.ts` — **chỉ thiếu newline cuối file** |
+
+### Tình trạng các issue lần trước
+
+| Issue cũ | Trạng thái |
+|---|---|
+| [High] full suite fail (UI `goto` timeout) | ✅ Lần này suite xanh. `HomePage.goto()` không đổi → nguyên nhân là site live chập chờn; xem Low #4 bên dưới |
+| [Medium] `apiContext` mất `Accept` header | ✅ Đã chuyển `extraHTTPHeaders` vào `newContext`, `baseURL` API giờ chỉ khai báo 1 nơi. Bạn giữ `newContext` thay vì dùng `request` fixture — chấp nhận được (xem Low #3) |
+| [Medium] gọi API 2 lần (Raw + typed) | ✅ Đã fix gọn: happy path chỉ gọi typed, negative path chỉ gọi Raw. Data assert giờ chính là data lấy về → hết rủi ro lệch dữ liệu |
+| [Low] `as T` không validate runtime | ⏸ Để dành cho ngày schema testing — OK |
+| [Low] `from`/`to` "cần verify" | ❌ Chưa làm (Low #2) |
+| [Low] `CategoriesClient`, `AuthClient.login()` chưa có test | ❌ Chưa làm (Low #1) |
+| [Low] formatting/typo | 🟡 Typo, ngoặc thừa, dòng trống, trailing comma đã sửa; còn thiếu newline cuối file |
+| [Low] `###DayNN` thiếu space | ✅ Đã sửa |
+
+### Issues còn lại
+
+**[Low] src/api/categories.client.ts, src/api/auth.client.ts:12 — vẫn chưa có test dùng typed method**
+- Vì sao: type `CategoryTree` (đệ quy `sub_categories`) và `AuthResponse` vẫn chỉ là "đoán". Client không có test = dead code về mặt verify.
+- Hint: 1 test `getCategoryTree()` (assert mảng không rỗng, node gốc có `parent_id === null`), 1 test `login(config.customer)` happy path (assert `token_type`, `expires_in > 0`). Credential lấy từ `config`, không hardcode.
+
+**[Low] src/api/types/common.ts:10,13 — comment "cần verify" vẫn còn**
+- Hint: gọi `getProducts(999)` một lần là biết `from`/`to` có `null` không → chốt type, xoá comment.
+
+**[Low] src/fixtures/api.fixture.ts:16-25 + playwright.config.ts:42-45 — hệ quả của việc bỏ `use` trong project `api`**
+- Vấn đề: project `api` giờ kế thừa `baseURL: config.baseUrl` (URL **UI**) từ `use` global. Code hiện tại không dùng `request` fixture nên chưa sao, nhưng nếu sau này ai viết `async ({ request }) => request.get("/products")` trong `tests/api` thì sẽ gọi nhầm sang frontend và nhận HTML.
+- Hint: chọn 1 "nguồn sự thật" cho cấu hình API: hoặc (a) để `baseURL`/`extraHTTPHeaders` ở project `api` và fixture dùng `request` built-in, hoặc (b) giữ `newContext` như hiện tại nhưng ghi chú rõ "trong tests/api dùng client fixtures, không dùng `request` trực tiếp". Cách (b) hợp lý khi bạn sắp cần context có header `Authorization` riêng (ngày auth API). Docs: https://playwright.dev/docs/api-testing#configuration
+
+**[Low] src/pages/HomePage.ts:38 — `goto` vẫn chờ `load` mặc định (rủi ro flaky còn đó)**
+- Lần này xanh, nhưng lần trước fail ngẫu nhiên vì `load` trên site live. Code chưa thay đổi → trên CI (1 worker, mạng khác) vẫn có thể đỏ.
+- Hint: tra `waitUntil: "domcontentloaded"` — bạn đã có `productNames.first().waitFor()` để đảm bảo trang sẵn sàng. Không bắt buộc hôm nay.
+
+**[Low] tests/api/products.api.spec.ts:45-56 — describe "Auth API" nằm trong file `products.api.spec.ts`**
+- Vì sao: tên file nói "products" nhưng chứa test login → khó tìm, report gom sai nhóm. Mỗi file spec nên ứng với 1 resource/client.
+- Hint: tách sang `tests/api/auth.api.spec.ts` — cũng là chỗ để đặt test login happy path ở Low #1.
+
+**[Low] 4 file thiếu newline cuối file (`\ No newline at end of file`)**
+- Hint: bật `"files.insertFinalNewline": true` hoặc "Format on Save" với Prettier trong VS Code; chạy `npx prettier --write .` trước commit.
+
+### Làm tốt
+
+1. **Mỗi test gọi API đúng 1 lần, đúng "tầng"**: `GET /products` và `GET /products/{id}` chỉ dùng typed method (status được guard bởi `parseJson`), test 404/401 chỉ dùng Raw. Đây chính là lợi ích của tách Raw/Typed — test ngắn, đọc như spec.
+2. **Test title theo kiểu `METHOD /path returns <kết quả>`** (`GET /products/{id} returns 404 for a non-existent id`) + tag `@api`: đọc report là biết endpoint nào hỏng, filter được bằng `--grep @api`.
+3. **Assertion có ý nghĩa nghiệp vụ**: `toBeLessThanOrEqual(body.per_page)` kiểm tra contract phân trang chứ không chỉ "có data"; `toMatchObject` so detail với item trong list — so sánh partial đúng chỗ thay vì `toEqual` toàn object.
+
+### Score
+
+| Tiêu chí | Điểm | Ghi chú |
+|---|---|---|
+| Correctness | 3/3 | Suite 21/21 xanh, header `Accept` đã có, không còn gọi API thừa |
+| Locator & waiting (→ API: request/flakiness) | 2.5/3 | Hết rủi ro 2 response lệch nhau; trừ vì `goto` UI vẫn còn rủi ro `load` |
+| Structure/POM (→ client/fixture) | 2/2 | Fixture gọn (`await use(new X(...))`), baseURL 1 nơi |
+| Readability & TS quality | 1.5/2 | Naming/title tốt; trừ: client chưa test, TODO type, test auth sai file, newline cuối file |
+| **Tổng** | **9/10** | |
+
+**Kết luận: PASS** ✅ — không còn issue High/Medium. Các Low nên dọn dần, ưu tiên Low #1 + #5 (tách `auth.api.spec.ts` + thêm login happy path) vì nó chuẩn bị cho phần auth API sắp tới.
+
+### Câu hỏi kiểm tra hiểu bài
+
+Project `api` của bạn giờ không có `use` riêng. Nếu trong `tests/api/products.api.spec.ts` bạn viết thêm một test dùng **cả** `productsClient` **và** built-in `request`: `request.get("/products")` sẽ gọi tới URL nào, có header `Accept: application/json` không — và vì sao `apiContext` của bạn và `request` là **hai** `APIRequestContext` khác nhau (gợi ý: ai tạo, đọc config từ đâu, ai `dispose`)?
