@@ -41,5 +41,4 @@ export const test = base.extend<ApiFixtures>({
   usersClient: async ({ apiContext }, use) => {
     await use(new UsersClient(apiContext));
   },
-
 });

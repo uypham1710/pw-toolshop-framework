@@ -27,8 +27,10 @@ export interface CreateUserRequest {
   email: string;
 }
 
-export interface CreateUserResponse
-  extends Omit<CreateUserRequest, 'password' | 'address' | 'phone'> {
+export interface CreateUserResponse extends Omit<
+  CreateUserRequest,
+  "password" | "address" | "phone"
+> {
   id: string;
   address: AddressResponse;
   phone: string | null;

@@ -226,6 +226,7 @@ Giả sử bạn đổi title thành `` `login fail: ${loginCase.title} (${login
 (c) So với Python: `pytest-xdist` báo lỗi gì khi `parametrize` sinh id khác nhau giữa các worker?
 
 ### Day10
+
 **Học:**
 refactor POM + add search/product tests
 **Làm:**
@@ -270,6 +271,7 @@ None
 ### Day13
 
 ## 2026-11-27
+
 **Học:**
 API client layer có types
 **Làm:**
@@ -282,7 +284,9 @@ sửa lại test dùng client
 None
 
 ## 2026-11-28
+
 ### Day14
+
 **Học:**
 Hybrid test: API tạo data → UI verify → API cleanup
 **Làm:**

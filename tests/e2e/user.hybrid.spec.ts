@@ -21,7 +21,9 @@ test.describe(
       await test.step("Verify account page shows the new user", async () => {
         await expect(page).toHaveURL(/\/account/);
         await expect(accountPage.pageTitle).toHaveText("My account");
-        await expect(accountPage.userMenu).toHaveText(`${newUser.firstName} ${newUser.lastName}`);
+        await expect(accountPage.userMenu).toHaveText(
+          `${newUser.firstName} ${newUser.lastName}`,
+        );
       });
     });
   },

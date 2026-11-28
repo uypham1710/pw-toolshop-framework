@@ -48,4 +48,3 @@ export const config: AppConfig = {
   baseUrl: requireEnv("BASE_URL"),
   apiUrl: requireEnv("API_URL"),
 };
-  
